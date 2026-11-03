@@ -1,0 +1,16 @@
+{
+  "date": "2026-11-03",
+  "ros_distro": "jazzy",
+  "map_points": 1090004,
+  "sha256": {
+    "src/robot_sim_worlds/worlds/building_accessible.sdf": "1563be740c2b56d45b0ddd0be422ff5bea261c8acd809cc6eaf07664864ce7a9",
+    "tools/output/building_accessible_5cm.ply": "940f89a1b738207d85a45c3cede2a9dd7a7c16dde18be5dce22f344a1593a11f",
+    "src/go2_bringup/config/controller.yaml": "c9cbd6e2c8b94905295dffd494a3af404b850c78f167a4004f18699450169c00",
+    "src/go2_bringup/config/planner.yaml": "8157720d8076952c35f4f22f75754ceaaa688384407b526e157bdf6c0dd3c8c7",
+    "src/go2_bringup/scripts/obstacle_height_filter.py": "b51a25fb60adb625712c0c2f46e37892c6be34debe48e6e0ab882749f9c2edb2",
+    "src/go2_bringup/src/height_aware_goal_checker.cpp": "1cffe2082d31c86e90ac5c1568172940f07ee76e799d7129e768d05ce06fa40e",
+    "src/ugv_nav4d_ros2/scripts/follow_path_client.py": "88f955a6c0fb984bcfaffeeb7c14348a754057131beebf93dcf2f8e56d11f849",
+    "src/go2_bringup/config/navigation.rviz": "e6fb12705935bd2bb33dbcae799ab8dd9980403b0e79edcc5addfb768c858696",
+    "tools/verify_accessible_navigation.py": "8674a0b6a85572686419578561da9793fef90567f2c2db7be827899c29855cb9"
+  }
+}

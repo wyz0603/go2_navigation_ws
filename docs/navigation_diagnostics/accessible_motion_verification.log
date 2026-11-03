@@ -1,0 +1,52 @@
+READY: Follower ready 
+Goal surface: (1.0, 0.0, 0.0)
+{"elapsed": 0.0, "sim_time": 0.01, "position": [-1.8645306066156703e-20, 2.647439674620965e-24, 0.339461], "target_surface": [1.0, 0.0, 0.0], "state": "READY", "segment": 0, "command": [0.0, 0.0, 0.0]}
+EXECUTING: Executing segment 1/1: Forward 
+{"elapsed": 10.01, "sim_time": 9.79, "position": [0.662155569277619, -0.0052807644746933865, 0.333776906666196], "target_surface": [1.0, 0.0, 0.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, -0.017898161969728064]}
+COMPLETED: Mission completed 
+PASS {"elapsed": 11.52, "sim_time": 11.22, "position": [0.9220540625192619, -0.002476983612771307, 0.34463156592676725], "target_surface": [1.0, 0.0, 0.0], "state": "COMPLETED", "segment": 1, "command": [0.18, 0.0, 0.15070657772999932], "xy_error": 0.07798528462196613, "height_error": 0.005368434073232731}
+Goal surface: (0.839, 1.423, 3.0)
+{"elapsed": 0.0, "sim_time": 11.22, "position": [0.9220540625192619, -0.002476983612771307, 0.34463156592676725], "target_surface": [0.839, 1.423, 3.0], "state": "COMPLETED", "segment": 1, "command": [0.0, 0.0, 0.0]}
+EXECUTING: Executing segment 1/1: Backward 
+{"elapsed": 10.01, "sim_time": 20.68, "position": [0.40223349897210375, 0.5132026255208867, 0.3382972957531733], "target_surface": [0.839, 1.423, 3.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, -0.1120090804087407]}
+{"elapsed": 20.01, "sim_time": 30.17, "position": [-0.8470772364053631, 2.2236343192113877, 0.3439161403519845], "target_surface": [0.839, 1.423, 3.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, 0.0014449497847991441]}
+{"elapsed": 30.02, "sim_time": 39.68, "position": [-2.1003379492386323, 3.9299618011824906, 0.34695328327588815], "target_surface": [0.839, 1.423, 3.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, -0.00027027877284186287]}
+{"elapsed": 40.03, "sim_time": 49.51, "position": [-3.3790872783522277, 5.67240045346541, 0.33626660240342865], "target_surface": [0.839, 1.423, 3.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, -0.01925530413593231]}
+{"elapsed": 50.03, "sim_time": 59.13, "position": [-4.912845954183613, 5.12265667716094, 0.3484230993330949], "target_surface": [0.839, 1.423, 3.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, 0.24497234559212477]}
+{"elapsed": 60.03, "sim_time": 68.57, "position": [-4.862045946380591, 2.8088973736344403, 0.8131476862091456], "target_surface": [0.839, 1.423, 3.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, 0.02044271475183079]}
+{"elapsed": 70.03, "sim_time": 78.12, "position": [-4.821785723308673, 0.44119800900138995, 1.3030043578515536], "target_surface": [0.839, 1.423, 3.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, 0.007134547721632179]}
+{"elapsed": 80.03, "sim_time": 87.59, "position": [-4.7827372561132675, -1.9068031346659882, 1.8158145153027048], "target_surface": [0.839, 1.423, 3.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, -0.04156230773314761]}
+{"elapsed": 90.04, "sim_time": 97.06, "position": [-4.751759156779802, -4.253020115184215, 2.323788948301083], "target_surface": [0.839, 1.423, 3.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, -0.02196053006337115]}
+{"elapsed": 100.04, "sim_time": 106.56, "position": [-4.715008347372801, -6.598434483185083, 2.83097047220623], "target_surface": [0.839, 1.423, 3.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, -0.032434739029052514]}
+{"elapsed": 110.04, "sim_time": 116.06, "position": [-4.775452703168244, -8.966715681091054, 3.318803265716697], "target_surface": [0.839, 1.423, 3.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, 0.23270306040636604]}
+{"elapsed": 120.04, "sim_time": 125.54, "position": [-3.2338157815619915, -8.83455484089796, 3.338326777152571], "target_surface": [0.839, 1.423, 3.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, 0.0413128949315259]}
+{"elapsed": 130.04, "sim_time": 135.01, "position": [-2.3109551197152225, -6.932169024641944, 3.3374003666789753], "target_surface": [0.839, 1.423, 3.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, -0.004872097224778508]}
+{"elapsed": 140.04, "sim_time": 144.54, "position": [-1.4497918455015544, -4.942812934629461, 3.3474455737206963], "target_surface": [0.839, 1.423, 3.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, 0.0002515959550175599]}
+{"elapsed": 150.04, "sim_time": 154.05, "position": [-0.5976242448003366, -2.9579758953377793, 3.3395974052569795], "target_surface": [0.839, 1.423, 3.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, -0.005799986831569272]}
+{"elapsed": 160.05, "sim_time": 163.51, "position": [0.24610277538410635, -0.9971997699879868, 3.3359422690799514], "target_surface": [0.839, 1.423, 3.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, -0.036233186274668386]}
+{"elapsed": 170.05, "sim_time": 172.96, "position": [1.094826856972977, 0.9698574917401147, 3.343239292908012], "target_surface": [0.839, 1.423, 3.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, 0.36544964115364115]}
+{"elapsed": 180.05, "sim_time": 182.44, "position": [0.8191280780180593, 1.580804363879815, 3.3375499241119444], "target_surface": [0.839, 1.423, 3.0], "state": "EXECUTING", "segment": 1, "command": [0.0, 0.0, 0.331876419095513]}
+COMPLETED: Mission completed 
+PASS {"elapsed": 181.4, "sim_time": 183.7, "position": [0.7632177848386734, 1.5894119844375443, 3.3429285916599083], "target_surface": [0.839, 1.423, 3.0], "state": "COMPLETED", "segment": 1, "command": [0.0, 0.0, 0.35], "xy_error": 0.18285484051344952, "height_error": 0.007071408340091678}
+Goal surface: (0.839, 1.423, 6.0)
+{"elapsed": 0.0, "sim_time": 183.71, "position": [0.7625378938578292, 1.5894324079025004, 3.3428182364419956], "target_surface": [0.839, 1.423, 6.0], "state": "COMPLETED", "segment": 1, "command": [0.0, 0.0, 0.35]}
+EXECUTING: Executing segment 1/1: Forward 
+{"elapsed": 10.01, "sim_time": 193.13, "position": [1.7656230223118994, -0.2100073139448682, 3.34630655599275], "target_surface": [0.839, 1.423, 6.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, -0.029419025664636188]}
+{"elapsed": 20.01, "sim_time": 202.58, "position": [2.6756017065981337, -2.09800727733125, 3.3441557751261044], "target_surface": [0.839, 1.423, 6.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, -0.03584366649721906]}
+{"elapsed": 30.01, "sim_time": 212.02, "position": [3.586437609935191, -3.9817612416373094, 3.3366923462262594], "target_surface": [0.839, 1.423, 6.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, -0.03200492318803553]}
+{"elapsed": 40.02, "sim_time": 221.47, "position": [4.507583965869285, -5.883901458324416, 3.342381793855247], "target_surface": [0.839, 1.423, 6.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, -0.002846091909774496]}
+{"elapsed": 50.02, "sim_time": 230.9, "position": [5.422687659751911, -7.7674923786003784, 3.341913127734611], "target_surface": [0.839, 1.423, 6.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, 0.010729287826921523]}
+{"elapsed": 60.03, "sim_time": 240.31, "position": [6.434601097068836, -9.603536533350507, 3.3341941583131343], "target_surface": [0.839, 1.423, 6.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, 0.13668623686239526]}
+{"elapsed": 70.03, "sim_time": 249.74, "position": [8.122545898957819, -9.060600233268703, 3.3577855366313427], "target_surface": [0.839, 1.423, 6.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, 0.19405688979812136]}
+{"elapsed": 80.04, "sim_time": 259.19, "position": [8.029298416339447, -6.760282225951597, 3.814029801347067], "target_surface": [0.839, 1.423, 6.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, 0.05688226973343265]}
+{"elapsed": 90.04, "sim_time": 268.62, "position": [7.949243391173579, -4.417487420683943, 4.324049159141088], "target_surface": [0.839, 1.423, 6.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, 0.023144528482238802]}
+{"elapsed": 100.04, "sim_time": 278.01, "position": [7.867073375024709, -2.092757750199208, 4.813116402156076], "target_surface": [0.839, 1.423, 6.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, -0.011701323623475285]}
+{"elapsed": 110.04, "sim_time": 287.47, "position": [7.785920638433346, 0.2667041002259239, 5.3134838091138565], "target_surface": [0.839, 1.423, 6.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, -0.07006431362701017]}
+{"elapsed": 120.05, "sim_time": 296.92, "position": [7.722140435710519, 2.6053941904647404, 5.833166806126748], "target_surface": [0.839, 1.423, 6.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, -0.01797354309599698]}
+{"elapsed": 130.05, "sim_time": 306.33, "position": [7.645089516514243, 4.949269681230657, 6.321143629294571], "target_surface": [0.839, 1.423, 6.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, 0.3163840556254129]}
+{"elapsed": 140.06, "sim_time": 315.77, "position": [5.8397798801201555, 5.093928192844235, 6.341494523195849], "target_surface": [0.839, 1.423, 6.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, 0.18973037898687278]}
+{"elapsed": 150.07, "sim_time": 325.2, "position": [4.095530600978387, 3.940844906656258, 6.341834369844094], "target_surface": [0.839, 1.423, 6.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, 0.005644172736245797]}
+{"elapsed": 160.07, "sim_time": 334.61, "position": [2.283570814820745, 2.90074010446175, 6.347484816050905], "target_surface": [0.839, 1.423, 6.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, -0.01249983990387592]}
+{"elapsed": 170.08, "sim_time": 344.1, "position": [0.5429835878905559, 1.7514501158540066, 6.341142841973869], "target_surface": [0.839, 1.423, 6.0], "state": "EXECUTING", "segment": 1, "command": [0.25, 0.0, 0.7645306877530321]}
+COMPLETED: Mission completed 
+PASS {"elapsed": 172.54, "sim_time": 346.42, "position": [0.7714515332707698, 1.401500207894386, 6.345871501626858], "target_surface": [0.839, 1.423, 6.0], "state": "COMPLETED", "segment": 1, "command": [0.18, 0.0, 0.8], "xy_error": 0.07088749126647485, "height_error": 0.004128498373141887}

@@ -1,0 +1,4 @@
+numpy>=1.26,<3
+trimesh>=4.6,<5
+pycollada>=0.8,<1
+python-dateutil>=2.8,<3

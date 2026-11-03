@@ -1,0 +1,13 @@
+<sdf version="1.6">
+  <model name="hospital_upper_floor_connected">
+    <static>true</static>
+    <link name="link">
+      <visual name="visual">
+        <geometry><mesh><uri>model://hospital_scene_hospital_upper_floor_connected/meshes/visual.dae</uri></mesh></geometry>
+      </visual>
+      <collision name="collision">
+        <geometry><mesh><uri>model://hospital_scene_hospital_upper_floor_connected/meshes/collision.dae</uri></mesh></geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>

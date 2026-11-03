@@ -1,0 +1,5 @@
+<library path="go2_height_aware_goal_checker">
+  <class type="go2_bringup::HeightAwareGoalChecker" base_class_type="nav2_core::GoalChecker">
+    <description>Check floor height before applying Nav2 position and heading tolerances.</description>
+  </class>
+</library>

@@ -1,0 +1,176 @@
+[
+  {
+    "test": "straight_2m",
+    "target": [
+      2.0,
+      0.0,
+      0.0
+    ],
+    "start": [
+      -0.04668770583136923,
+      0.0017652746381934203,
+      0.3357951554467568,
+      0.032441804777175634
+    ],
+    "path_endpoint": [
+      1.766879059279431,
+      -0.19837675142264632,
+      0.3290150870869303
+    ],
+    "seconds": 25.504064603999723,
+    "status": "PAUSED",
+    "summary": "Execution aborted externally (controller stop?); press Resume to continue from the robot position",
+    "failure_reason": "",
+    "end": [
+      1.6176127363041213,
+      -0.29443541768004317,
+      0.3031110623363324,
+      0.526395603600835
+    ],
+    "xy_error": 0.482609816126074,
+    "yaw_error": 0.526395603600835,
+    "controller_error": "Failed to make progress",
+    "follow_path_action_status": "ABORTED (6)",
+    "yaw_error_degrees": 30.160246440569328,
+    "path_endpoint_xy_error": 0.3061024477318753
+  },
+  {
+    "test": "left_turn",
+    "target": [
+      2.0,
+      1.0,
+      1.5707963267948966
+    ],
+    "start": [
+      1.7014858796850403,
+      -0.27246062285073314,
+      0.3493670692198179,
+      0.12292758943356595
+    ],
+    "path_endpoint": [
+      1.900102996826174,
+      0.9002098083496115,
+      0.32901508584618566
+    ],
+    "seconds": 26.85593956199591,
+    "status": "PAUSED",
+    "summary": "Execution aborted externally (controller stop?); press Resume to continue from the robot position",
+    "failure_reason": "",
+    "end": [
+      1.9375267207777245,
+      1.1714876857689818,
+      0.32436775583850347,
+      -3.083788908932629
+    ],
+    "xy_error": 0.1825128406090526,
+    "yaw_error": 1.628600071452061,
+    "controller_error": "Failed to make progress",
+    "follow_path_action_status": "ABORTED (6)",
+    "yaw_error_degrees": 93.3119106089074,
+    "path_endpoint_xy_error": 0.141200189775838
+  },
+  {
+    "test": "return_diagonal",
+    "target": [
+      0.0,
+      0.0,
+      3.141592653589793
+    ],
+    "start": [
+      1.9375267207777245,
+      1.1714876857689818,
+      0.32436775583850347,
+      -3.083788908932629
+    ],
+    "path_endpoint": [
+      -2.7755575615628914e-16,
+      1.1102230246251565e-16,
+      0.32901510550106033
+    ],
+    "seconds": 25.8553722959914,
+    "status": "PAUSED",
+    "summary": "Execution aborted externally (controller stop?); press Resume to continue from the robot position",
+    "failure_reason": "",
+    "end": [
+      -0.02273147728908786,
+      0.1225898287503529,
+      0.30782196167448433,
+      -2.1113031656305865
+    ],
+    "xy_error": 0.12467953389704811,
+    "yaw_error": 1.0302894879592073,
+    "controller_error": "Failed to make progress",
+    "follow_path_action_status": "ABORTED (6)",
+    "yaw_error_degrees": 59.031239336757224,
+    "path_endpoint_xy_error": 2.9893669801409083e-16
+  },
+  {
+    "test": "pointcloud_interruption",
+    "start": [
+      1.6176127363041213,
+      -0.29443541768004317,
+      0.3031110623363324,
+      0.526395603600835
+    ],
+    "path_endpoint": [
+      3.117612736304121,
+      -0.2944354176800433,
+      0.32901507259884244
+    ],
+    "first_zero_seconds": 0.6911451769992709,
+    "stayed_zero_after_3s": true,
+    "end": [
+      1.7225311456532189,
+      -0.2747548636117474,
+      0.34417323567287283,
+      0.16447590756236005
+    ],
+    "states": [
+      {
+        "state": "EXECUTING",
+        "reason": "",
+        "summary": "Executing segment 1/1"
+      },
+      {
+        "state": "EXECUTING",
+        "reason": "",
+        "summary": "Executing segment 1/1"
+      },
+      {
+        "state": "EXECUTING",
+        "reason": "",
+        "summary": "Executing segment 1/1"
+      },
+      {
+        "state": "EXECUTING",
+        "reason": "",
+        "summary": "Executing segment 1/1"
+      },
+      {
+        "state": "EXECUTING",
+        "reason": "",
+        "summary": "Executing segment 1/1"
+      },
+      {
+        "state": "EXECUTING",
+        "reason": "",
+        "summary": "Executing segment 1/1"
+      },
+      {
+        "state": "EXECUTING",
+        "reason": "",
+        "summary": "Executing segment 1/1"
+      },
+      {
+        "state": "EXECUTING",
+        "reason": "",
+        "summary": "Executing segment 1/1"
+      },
+      {
+        "state": "PAUSED",
+        "reason": "",
+        "summary": "Execution aborted externally (controller stop?); press Resume to continue from the robot position"
+      }
+    ]
+  }
+]

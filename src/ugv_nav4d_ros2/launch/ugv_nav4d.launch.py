@@ -1,0 +1,123 @@
+from launch import LaunchDescription
+from launch_ros.actions import Node, SetParameter
+from launch.substitutions import LaunchConfiguration
+from ament_index_python.packages import get_package_share_directory
+from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable
+
+import os
+
+def generate_launch_description():
+
+    default_param_file = os.path.join(
+        get_package_share_directory('ugv_nav4d_ros2'),
+        'config',
+        'params.yaml'
+        )
+
+    declared_arguments = []
+
+    declared_arguments.append(
+	DeclareLaunchArgument(
+            'use_sim_time',
+            # Pass use_sim_time:=true when launching against the Gazebo sim;
+            # forgetting it produces wall-clock path stamps that the (sim-time)
+            # TF tree rejects as "Transform data too old".
+            default_value='false',
+        )
+    )
+
+    declared_arguments.append(
+        SetParameter(
+            name="use_sim_time",
+            value=LaunchConfiguration("use_sim_time"),
+        )
+    )
+    
+    declared_arguments.append(
+	DeclareLaunchArgument(
+            'main_param_file',
+            default_value=default_param_file,
+            description='Full path to main parameter file to load')	
+    )
+    
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            'pointcloud_topic',
+            default_value='/map',
+            description='Topic name of the pointcloud used to generate MLS map'
+        )
+    )
+    
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            'goal_topic',
+            default_value='/ugv_nav4d_ros2/goal_pose',
+            description='Topic name of the goal pose'
+        )
+    )
+
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            'pose_samples_topic',
+            default_value='/ugv_nav4d_ros2/start_pose',
+            description='Topic name of the goal pose'
+        )
+    )    
+
+    # 1. Headless planner node
+    declared_arguments.append(
+        Node(
+        package="ugv_nav4d_ros2",
+        executable="ugv_nav4d_ros2_node",
+        name="ugv_nav4d_ros2",
+        output="screen",
+        remappings=[
+                ("/ugv_nav4d_ros2/pointcloud", LaunchConfiguration("pointcloud_topic")),
+                ("/ugv_nav4d_ros2/goal_pose", LaunchConfiguration("goal_topic")),
+                ("/ugv_nav4d_ros2/start_pose", LaunchConfiguration("pose_samples_topic")),
+            ],
+        parameters=[LaunchConfiguration("main_param_file")],
+        )
+    )
+
+    declared_arguments.append(
+        Node(
+            package="ugv_nav4d_ros2",
+            executable="bag_recorder.py",
+            name="nav_bag_recorder",
+            output="screen",
+        )
+    )
+
+    declared_arguments.append(
+        Node(
+        package="ugv_nav4d_ros2",
+        executable="visualize_path.py",
+        name="ugv_nav4d_path_visualization",
+        output="screen",
+        remappings=[],
+        parameters=[],
+        )
+    )
+
+    declared_arguments.append(
+        Node(
+        package="ugv_nav4d_ros2",
+        executable="follow_path_client.py",
+        name="ugv_nav4d_follow_path_client",
+        output="screen",
+        parameters=[LaunchConfiguration("main_param_file")],
+        )
+    )
+
+    declared_arguments.append(
+        Node(
+        package="ugv_nav4d_ros2",
+        executable="field_operations.py",
+        name="ugv_nav4d_field_operations",
+        output="screen",
+        parameters=[LaunchConfiguration("main_param_file")],
+        )
+    )
+
+    return LaunchDescription(declared_arguments)

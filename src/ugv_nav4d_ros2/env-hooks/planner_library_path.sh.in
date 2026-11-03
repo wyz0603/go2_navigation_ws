@@ -1,0 +1,4 @@
+for _go2_planner_lib in @GO2_PLANNER_LIBRARY_PATHS@; do
+  ament_prepend_unique_value LD_LIBRARY_PATH "$_go2_planner_lib"
+done
+unset _go2_planner_lib

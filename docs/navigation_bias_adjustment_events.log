@@ -1,0 +1,16 @@
+[ugv_nav4d_ros2_node-6] [INFO] [1793416378.004540103] [ugv_nav4d_ros2]: Loaded MLS from PLY '/home/wyz/go2_navigation_ws/tools/output/building_obstacles_5cm.ply' (202 202 cells @ 0.2 m).
+[ugv_nav4d_ros2_node-6] [INFO] [1793416407.690610616] [ugv_nav4d_ros2]: Planning: start (-0.0469445 0.00176552   0.335799) -> goal (   2    0 0.35), time budget 20 s
+[ugv_nav4d_ros2_node-6] [INFO] [1793416407.706313117] [ugv_nav4d_ros2]: FOUND_SOLUTION: 1 trajectory segment(s) (0.02 s)
+[controller_server-4] [INFO] [1793416417.660140787] [controller_server]: Reached the goal!
+[follow_path_client.py-7] [INFO] [1793416417.660989584] [ugv_nav4d_follow_path_client]: Goal finished with status code: 4
+[follow_path_client.py-7] [INFO] [1793416417.661633432] [ugv_nav4d_follow_path_client]: All paths executed.
+[ugv_nav4d_ros2_node-6] [INFO] [1793416418.673292899] [ugv_nav4d_ros2]: Planning: start (    1.91713 -0.00958969    0.344713) -> goal (   2    1 0.35), time budget 20 s
+[ugv_nav4d_ros2_node-6] [INFO] [1793416418.694036696] [ugv_nav4d_ros2]: FOUND_SOLUTION: 1 trajectory segment(s) (0.02 s)
+[controller_server-4] [INFO] [1793416425.897723420] [controller_server]: Reached the goal!
+[follow_path_client.py-7] [INFO] [1793416425.898548750] [ugv_nav4d_follow_path_client]: Goal finished with status code: 4
+[follow_path_client.py-7] [INFO] [1793416425.898955817] [ugv_nav4d_follow_path_client]: All paths executed.
+[ugv_nav4d_ros2_node-6] [INFO] [1793416426.905085952] [ugv_nav4d_ros2]: Planning: start (2.04251  0.8934 0.34529) -> goal (   0    0 0.35), time budget 20 s
+[ugv_nav4d_ros2_node-6] [INFO] [1793416426.926413302] [ugv_nav4d_ros2]: FOUND_SOLUTION: 1 trajectory segment(s) (0.02 s)
+[controller_server-4] [INFO] [1793416439.080147647] [controller_server]: Reached the goal!
+[follow_path_client.py-7] [INFO] [1793416439.080765470] [ugv_nav4d_follow_path_client]: Goal finished with status code: 4
+[follow_path_client.py-7] [INFO] [1793416439.081217101] [ugv_nav4d_follow_path_client]: All paths executed.

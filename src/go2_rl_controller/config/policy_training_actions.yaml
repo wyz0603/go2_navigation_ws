@@ -1,0 +1,47 @@
+onnx_policy_controller:
+  ros__parameters:
+    use_sim_time: true
+    policy_path: ""
+    control_rate: 200.0
+    policy_decimation: 4
+    history_length: 10
+    single_observation_size: 45
+    action_size: 12
+    action_scale: 0.25
+    # Matches JointPositionActionCfg.clip={".*": (-100.0, 100.0)} in training.
+    action_clip: 100.0
+    observation_clip: 100.0
+    ang_vel_scale: 0.25
+    dof_pos_scale: 1.0
+    dof_vel_scale: 0.05
+    command_scale: [0.5, 1.0, 1.0]
+    default_angles: [0.1, 0.8, -1.5, -0.1, 0.8, -1.5, 0.1, 1.0, -1.5, -0.1, 1.0, -1.5]
+    kp: 25.0
+    # The 0.5 velocity damping is applied by Gazebo's joint dynamics. Do not
+    # apply it again here; delayed derivative feedback causes oscillation.
+    kd: 0.0
+    # Matches Go2ActuatorCfg / deploy_mujoco/config.yaml.
+    motor_use_torque_speed_curve: true
+    motor_x1: 13.5
+    motor_x2: 30.0
+    motor_y1: 20.2
+    motor_y2: 23.4
+    command_timeout: 0.3
+    sensor_timeout: 0.2
+    stand_transition_duration: 2.0
+    policy_warmup_duration: 1.0
+    # Keep the policy active at zero command to avoid abrupt crouching on stop.
+    hold_stand_without_command: false
+    log_enabled: false
+    log_every_control_tick: false
+    # Disable Gazebo-specific front leg corrections for comparison.
+    front_thigh_action_gain: 1.0
+    front_calf_offset: 0.0
+    # Pass yaw commands directly to the policy for comparison.
+    heading_hold: false
+    heading_kp: 1.0
+    heading_max_yaw_rate: 0.25
+    joint_state_topic: /joint_states
+    imu_topic: /go2/imu
+    cmd_vel_topic: /cmd_vel
+    effort_topic: /go2_effort_controller/commands

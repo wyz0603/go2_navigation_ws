@@ -1,0 +1,13 @@
+std_msgs/Header header
+string frame_id
+string type
+float64 depth
+float64 height
+float64 minz
+float64 maxz
+float32 a
+float32 b
+float32 c
+float32 d
+geometry_msgs/Point position
+std_msgs/ColorRGBA color

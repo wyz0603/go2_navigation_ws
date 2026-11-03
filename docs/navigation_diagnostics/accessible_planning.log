@@ -1,0 +1,50 @@
+[INFO] [1793671341.567896430] [ugv_nav4d_ros2]: Loaded PLY '/home/wyz/go2_navigation_ws/tools/output/building_accessible_5cm.ply': spans x [-20.2, 20.2], y [-20.2, 20.2] in the world frame. To center it on the origin set mls_file_offset_x: 0.0, mls_file_offset_y: 0.0 (offsets are absolute, not incremental).
+[INFO] [1793671341.597383659] [static_transform_publisher_8pZiko7oX7OhYDgQ]: Spinning until stopped - publishing transform
+translation: ('0.000000', '0.000000', '0.350000')
+rotation: ('0.000000', '0.000000', '0.000000', '1.000000')
+from 'world' to 'base'
+[INFO] [1793671341.610068410] [ugv_nav4d_ros2]: Loaded MLS from PLY '/home/wyz/go2_navigation_ws/tools/output/building_accessible_5cm.ply' (203 203 cells @ 0.2 m).
+[INFO] [1793671342.627264084] [ugv_nav4d_ros2]: Planner state: Configuring with the already-loaded map (no disk access)
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[INFO] [1793671342.923493783] [ugv_nav4d_ros2]: Timing: trav-map expansion took 0.294889 s.
+[INFO] [1793671347.087895090] [ugv_nav4d_ros2]: Timing: environment build (incl. motion-primitive generation) took 4.08711 s.
+[INFO] [1793671347.087949870] [ugv_nav4d_ros2]: Planner state: Ready
+[INFO] [1793671347.136868324] [ugv_nav4d_ros2]: Timing: trav-map message build+publish (54111 patches) took 0.0276109 s.
+[INFO] [1793671348.076556805] [ugv_nav4d_ros2]: Planning: start (   0    0 0.35) -> goal (0.839 1.423  3.33), time budget 20 s
+[INFO] [1793671348.155273597] [ugv_nav4d_ros2]: FOUND_SOLUTION: 5 trajectory segment(s) (0.08 s)
+State 0 coordinate 101 101 -0.02 Theta 0
+State 1 coordinate 105 108 2.99 Theta 0
+[INFO] [1793671373.156161052] [ugv_nav4d_ros2]: Planning: start (   0    0 0.35) -> goal (0.839 1.423  6.33), time budget 20 s
+[INFO] [1793671373.234567099] [ugv_nav4d_ros2]: FOUND_SOLUTION: 9 trajectory segment(s) (0.08 s)
+State 0 coordinate 101 101 -0.02 Theta 0
+State 1 coordinate 105 108 5.99 Theta 0
+[INFO] [1793671398.247517380] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[INFO] [1793671398.247582297] [rclcpp]: signal_handler(SIGINT/SIGTERM)

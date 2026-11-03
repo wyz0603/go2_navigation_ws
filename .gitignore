@@ -1,0 +1,26 @@
+# ROS 2 / colcon generated workspace files
+/build/
+/install/
+/log/
+.colcon/
+
+# Local Python dependencies and caches
+.deps/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Runtime recordings and mission audit files
+*.db3
+*.mcap
+*.bag
+/ugv_nav4d_mission_audit.jsonl
+
+# Local editor and operating-system files
+.idea/
+.DS_Store
+*~
+*.swp
+*.swo

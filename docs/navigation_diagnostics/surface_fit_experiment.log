@@ -1,0 +1,32 @@
+[INFO] [1793669695.227919065] [ugv_nav4d_ros2]: Loaded PLY '/home/wyz/go2_navigation_ws/tools/output/building_obstacles_5cm.ply': spans x [-20.2, 20.2], y [-20.2, 20.2] in the world frame. To center it on the origin set mls_file_offset_x: 0.0, mls_file_offset_y: 0.0 (offsets are absolute, not incremental).
+[INFO] [1793669695.237687181] [static_transform_publisher_6K5lSf2k0XWY164K]: Spinning until stopped - publishing transform
+translation: ('0.000000', '0.000000', '0.350000')
+rotation: ('0.000000', '0.000000', '0.000000', '1.000000')
+from 'world' to 'base'
+[INFO] [1793669695.312688513] [ugv_nav4d_ros2]: Loaded MLS from PLY '/home/wyz/go2_navigation_ws/tools/output/building_obstacles_5cm.ply' (202 202 cells @ 0.2 m).
+[INFO] [1793669696.346073426] [ugv_nav4d_ros2]: Planner state: Configuring with the already-loaded map (no disk access)
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[pcl::SampleConsensusModelPlane::isSampleGood] Sample points too similar or collinear!
+[INFO] [1793669696.588556950] [ugv_nav4d_ros2]: Timing: trav-map expansion took 0.239766 s.
+[INFO] [1793669700.660908803] [ugv_nav4d_ros2]: Timing: environment build (incl. motion-primitive generation) took 4.02787 s.
+[INFO] [1793669700.660970967] [ugv_nav4d_ros2]: Planner state: Ready
+[INFO] [1793669700.711864738] [ugv_nav4d_ros2]: Timing: trav-map message build+publish (39876 patches) took 0.0194732 s.
+[INFO] [1793669701.401598781] [ugv_nav4d_ros2]: Planning: start (   0    0 0.35) -> goal (0.839 1.423  3.33), time budget 20 s
+[20261103-09:35:01:402] [ERROR] - ugv_nav4d::createNewStateFromPose: could not find matching trav node for goal at 0.839 1.423  2.98
+ (/home/wyz/ugv_nav4d/src/EnvironmentXYZTheta.cpp:142 - ugv_nav4d::EnvironmentXYZTheta::ThetaNode* ugv_nav4d::EnvironmentXYZTheta::createNewStateFromPose(const std::string&, const Eigen::Vector3d&, double, XYZNode**))
+[20261103-09:35:01:402] [ERROR] - ugv_nav4d::Caught exception while setting goal pose:Failed to create goal state (/home/wyz/ugv_nav4d/src/Planner.cpp:97 - bool ugv_nav4d::Planner::tryGoal(const Eigen::Vector3d&, double))
+[ERROR] [1793669701.402095136] [ugv_nav4d_ros2]: GOAL_INVALID (0.00 s)
+[WARN] [1793669701.402121103] [ugv_nav4d_ros2]: Planning did not succeed; publishing empty path to clear any stale trajectory.
+[INFO] [1793669726.484754957] [ugv_nav4d_ros2]: Planning: start (   0    0 0.35) -> goal (0.839 1.423  6.33), time budget 20 s
+[20261103-09:35:26:485] [ERROR] - ugv_nav4d::createNewStateFromPose: could not find matching trav node for goal at 0.839 1.423  5.98
+ (/home/wyz/ugv_nav4d/src/EnvironmentXYZTheta.cpp:142 - ugv_nav4d::EnvironmentXYZTheta::ThetaNode* ugv_nav4d::EnvironmentXYZTheta::createNewStateFromPose(const std::string&, const Eigen::Vector3d&, double, XYZNode**))
+[20261103-09:35:26:488] [ERROR] - ugv_nav4d::Caught exception while setting goal pose:Failed to create goal state (/home/wyz/ugv_nav4d/src/Planner.cpp:97 - bool ugv_nav4d::Planner::tryGoal(const Eigen::Vector3d&, double))
+[ERROR] [1793669726.489013916] [ugv_nav4d_ros2]: GOAL_INVALID (0.00 s)
+[WARN] [1793669726.489129597] [ugv_nav4d_ros2]: Planning did not succeed; publishing empty path to clear any stale trajectory.

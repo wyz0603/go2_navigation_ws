@@ -1,0 +1,40 @@
+[ugv_nav4d_ros2_node-5] [INFO] [1793363755.028307126] [ugv_nav4d_ros2]: Planning: start (-0.0466872 0.00176658   0.335795) -> goal (2 0 0), time budget 20 s
+[ugv_nav4d_ros2_node-5] [20261030-20:35:55:028] [ERROR] - ugv_nav4d::Caught exception while setting goal pose:Error, goal has to be a traversable/partially-traversable patch (/home/wyz/ugv_nav4d/src/Planner.cpp:97 - bool ugv_nav4d::Planner::tryGoal(const Eigen::Vector3d&, double))
+[ugv_nav4d_ros2_node-5] [INFO] [1793363755.043394365] [ugv_nav4d_ros2]: FOUND_SOLUTION: 1 trajectory segment(s) (0.01 s)
+[controller_server-3] [ERROR] [1793363780.547189062] [controller_server]: Failed to make progress
+[follow_path_client.py-6] [INFO] [1793363780.547917530] [ugv_nav4d_follow_path_client]: Goal finished with status code: 6
+[follow_path_client.py-6] [WARN] [1793363780.548291626] [ugv_nav4d_follow_path_client]: Goal aborted externally; mission retained as paused. Resume retries the remaining stretch from the robot position.
+[ugv_nav4d_ros2_node-5] [INFO] [1793363781.551088693] [ugv_nav4d_ros2]: Planning: start (  1.61761 -0.294435  0.303111) -> goal (  3.11761 -0.294435         0), time budget 20 s
+[ugv_nav4d_ros2_node-5] [INFO] [1793363781.573087022] [ugv_nav4d_ros2]: FOUND_SOLUTION: 1 trajectory segment(s) (0.02 s)
+[controller_server-3] [WARN] [1793363782.026076039] [local_costmap.local_costmap]: The /go2/obstacle_points observation buffer has not been updated for 0.50 seconds, and it should be updated every 0.50 seconds.
+[controller_server-3] [WARN] [1793363782.226060273] [local_costmap.local_costmap]: The /go2/obstacle_points observation buffer has not been updated for 0.70 seconds, and it should be updated every 0.50 seconds.
+[controller_server-3] [WARN] [1793363782.426076300] [local_costmap.local_costmap]: The /go2/obstacle_points observation buffer has not been updated for 0.90 seconds, and it should be updated every 0.50 seconds.
+[controller_server-3] [WARN] [1793363782.626069741] [local_costmap.local_costmap]: The /go2/obstacle_points observation buffer has not been updated for 1.10 seconds, and it should be updated every 0.50 seconds.
+[controller_server-3] [WARN] [1793363782.826070175] [local_costmap.local_costmap]: The /go2/obstacle_points observation buffer has not been updated for 1.30 seconds, and it should be updated every 0.50 seconds.
+[controller_server-3] [WARN] [1793363783.026066488] [local_costmap.local_costmap]: The /go2/obstacle_points observation buffer has not been updated for 1.50 seconds, and it should be updated every 0.50 seconds.
+[controller_server-3] [ERROR] [1793363783.036315930] [controller_server]: Costmap timed out waiting for update
+[follow_path_client.py-6] [INFO] [1793363783.037230766] [ugv_nav4d_follow_path_client]: Goal finished with status code: 6
+[follow_path_client.py-6] [WARN] [1793363783.037627182] [ugv_nav4d_follow_path_client]: Goal aborted externally; mission retained as paused. Resume retries the remaining stretch from the robot position.
+[controller_server-3] [WARN] [1793363783.226065384] [local_costmap.local_costmap]: The /go2/obstacle_points observation buffer has not been updated for 1.70 seconds, and it should be updated every 0.50 seconds.
+[controller_server-3] [WARN] [1793363783.426066101] [local_costmap.local_costmap]: The /go2/obstacle_points observation buffer has not been updated for 1.90 seconds, and it should be updated every 0.50 seconds.
+[controller_server-3] [WARN] [1793363783.626064672] [local_costmap.local_costmap]: The /go2/obstacle_points observation buffer has not been updated for 2.10 seconds, and it should be updated every 0.50 seconds.
+[controller_server-3] [WARN] [1793363783.826064245] [local_costmap.local_costmap]: The /go2/obstacle_points observation buffer has not been updated for 2.30 seconds, and it should be updated every 0.50 seconds.
+[controller_server-3] [WARN] [1793363784.026064589] [local_costmap.local_costmap]: The /go2/obstacle_points observation buffer has not been updated for 2.50 seconds, and it should be updated every 0.50 seconds.
+[controller_server-3] [WARN] [1793363784.226071703] [local_costmap.local_costmap]: The /go2/obstacle_points observation buffer has not been updated for 2.70 seconds, and it should be updated every 0.50 seconds.
+[controller_server-3] [WARN] [1793363784.426062384] [local_costmap.local_costmap]: The /go2/obstacle_points observation buffer has not been updated for 2.90 seconds, and it should be updated every 0.50 seconds.
+[controller_server-3] [WARN] [1793363784.626064610] [local_costmap.local_costmap]: The /go2/obstacle_points observation buffer has not been updated for 3.10 seconds, and it should be updated every 0.50 seconds.
+[controller_server-3] [WARN] [1793363784.826071473] [local_costmap.local_costmap]: The /go2/obstacle_points observation buffer has not been updated for 3.30 seconds, and it should be updated every 0.50 seconds.
+[controller_server-3] [WARN] [1793363785.026067892] [local_costmap.local_costmap]: The /go2/obstacle_points observation buffer has not been updated for 3.50 seconds, and it should be updated every 0.50 seconds.
+[controller_server-3] [WARN] [1793363785.226063147] [local_costmap.local_costmap]: The /go2/obstacle_points observation buffer has not been updated for 3.69 seconds, and it should be updated every 0.50 seconds.
+[controller_server-3] [WARN] [1793363785.426063883] [local_costmap.local_costmap]: The /go2/obstacle_points observation buffer has not been updated for 3.90 seconds, and it should be updated every 0.50 seconds.
+[controller_server-3] [WARN] [1793363785.627268362] [local_costmap.local_costmap]: The /go2/obstacle_points observation buffer has not been updated for 4.08 seconds, and it should be updated every 0.50 seconds.
+[ugv_nav4d_ros2_node-5] [INFO] [1793363812.991785411] [ugv_nav4d_ros2]: Planning: start (  1.70149 -0.272461  0.349367) -> goal (2 1 0), time budget 20 s
+[ugv_nav4d_ros2_node-5] [INFO] [1793363813.014400550] [ugv_nav4d_ros2]: FOUND_SOLUTION: 3 trajectory segment(s) (0.02 s)
+[controller_server-3] [ERROR] [1793363839.870879010] [controller_server]: Failed to make progress
+[follow_path_client.py-6] [INFO] [1793363839.871481071] [ugv_nav4d_follow_path_client]: Goal finished with status code: 6
+[follow_path_client.py-6] [WARN] [1793363839.871887358] [ugv_nav4d_follow_path_client]: Goal aborted externally; mission retained as paused. Resume retries the remaining stretch from the robot position.
+[ugv_nav4d_ros2_node-5] [INFO] [1793363840.879790229] [ugv_nav4d_ros2]: Planning: start ( 1.93753  1.17149 0.324368) -> goal (0 0 0), time budget 20 s
+[ugv_nav4d_ros2_node-5] [INFO] [1793363840.898646326] [ugv_nav4d_ros2]: FOUND_SOLUTION: 3 trajectory segment(s) (0.02 s)
+[controller_server-3] [ERROR] [1793363866.753198473] [controller_server]: Failed to make progress
+[follow_path_client.py-6] [INFO] [1793363866.753998043] [ugv_nav4d_follow_path_client]: Goal finished with status code: 6
+[follow_path_client.py-6] [WARN] [1793363866.754573937] [ugv_nav4d_follow_path_client]: Goal aborted externally; mission retained as paused. Resume retries the remaining stretch from the robot position.
