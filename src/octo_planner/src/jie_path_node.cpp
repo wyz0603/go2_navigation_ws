@@ -491,31 +491,13 @@ private:
       return false;
     }
 
-    // Reject vertical walls / columns / railings: a thin support surface (floor, ramp, stair tread)
-    // should not have occupied voxels stacking continuously 2+ cells directly below it.
-    const GridIndex deep_below1{idx.x, idx.y, idx.z - 2};
-    const GridIndex deep_below2{idx.x, idx.y, idx.z - 3};
-    if (isOccupiedCell(direct_below) && isInsideMetricBounds(deep_below1) && isOccupiedCell(deep_below1)) {
-      return false;
-    }
-    if (!isOccupiedCell(direct_below) && isInsideMetricBounds(deep_below1) && isOccupiedCell(deep_below1) &&
-        isInsideMetricBounds(deep_below2) && isOccupiedCell(deep_below2))
-    {
-      return false;
-    }
-
-    // Require direct support below (or within support_depth_cells directly below)
+    // Require direct support directly below (or within support_depth_cells directly below)
     bool center_supported = false;
     int support_z = idx.z - 1;
     const int max_dz = strict_direct_ground_support ? 1 : std::max(1, support_depth_cells);
     for (int dz = 1; dz <= max_dz; ++dz) {
       const GridIndex below{idx.x, idx.y, idx.z - dz};
       if (isInsideMetricBounds(below) && isOccupiedCell(below)) {
-        // Also ensure this supporting cell is not the top of a vertical column/railing
-        const GridIndex under_support{idx.x, idx.y, idx.z - dz - 1};
-        if (isInsideMetricBounds(under_support) && isOccupiedCell(under_support)) {
-          return false;
-        }
         center_supported = true;
         support_z = idx.z - dz;
         break;
@@ -527,7 +509,9 @@ private:
 
     // Require neighborhood surface continuity so narrow 1-cell railings, wall tops, or isolated
     // obstacle ledges are not marked traversable. A valid floor/ramp/stair tread has at least
-    // 4 supporting neighbors in its 3x3 horizontal neighborhood (within +/-1 cell in Z for slopes/stairs).
+    // 5 supporting neighbors in its 3x3 horizontal neighborhood whose top surface is within
+    // [support_z - 1, support_z + 1] (i.e. occupied at sz and free at sz + 1 and sz + 2).
+    // Thin railings/walls only have 2 neighbors along their line, while floors/stairs have 5..8.
     int neighbor_support_count = 0;
     const int xy_r = std::max(1, support_xy_radius_cells);
     for (int dx = -xy_r; dx <= xy_r; ++dx) {
@@ -541,11 +525,10 @@ private:
           if (!isInsideMetricBounds(n_sup) || !isOccupiedCell(n_sup)) {
             continue;
           }
-          // Ignore neighbor cells that are vertical walls/railings
-          const GridIndex n_above{idx.x + dx, idx.y + dy, sz + 1};
-          const GridIndex n_below{idx.x + dx, idx.y + dy, sz - 1};
-          if ((isInsideMetricBounds(n_above) && isOccupiedCell(n_above)) &&
-              (isInsideMetricBounds(n_below) && isOccupiedCell(n_below)))
+          const GridIndex n_above1{idx.x + dx, idx.y + dy, sz + 1};
+          const GridIndex n_above2{idx.x + dx, idx.y + dy, sz + 2};
+          if ((isInsideMetricBounds(n_above1) && isOccupiedCell(n_above1)) ||
+              (isInsideMetricBounds(n_above2) && isOccupiedCell(n_above2)))
           {
             continue;
           }
@@ -624,10 +607,16 @@ private:
           continue;
         }
         const GridIndex n_above1{n.x, n.y, n.z + 1};
-        if (!isInsideMetricBounds(n_above1)) {
+        if (!isInsideMetricBounds(n_above1) || !isOccupiedCell(n_above1)) {
           continue;
         }
-        if (isOccupiedCell(n_above1)) {
+        // Only treat neighbor as a blocking wall/obstacle above if it continues higher
+        // (i.e. not a single-voxel climbable stair step with free space above it).
+        const GridIndex n_above2{n.x, n.y, n.z + 2};
+        const GridIndex n_above3{n.x, n.y, n.z + 3};
+        if ((isInsideMetricBounds(n_above2) && isOccupiedCell(n_above2)) ||
+            (isInsideMetricBounds(n_above3) && isOccupiedCell(n_above3)))
+        {
           return true;
         }
       }
@@ -979,6 +968,17 @@ private:
           }
           const octomap::OcTreeNode * node = octree_->search(p);
           if (node && octree_->isNodeOccupied(node)) {
+            // Allow adjacent 1-voxel climbable stair steps at dz == 0 when the space above
+            // that step (nz + 1 and nz + 2) is clear for the robot to step up onto it.
+            if (dz == 0) {
+              const GridIndex step_above1{nearby_idx.x, nearby_idx.y, nearby_idx.z + 1};
+              const GridIndex step_above2{nearby_idx.x, nearby_idx.y, nearby_idx.z + 2};
+              if ((!isInsideMetricBounds(step_above1) || !isOccupiedCell(step_above1)) &&
+                  (!isInsideMetricBounds(step_above2) || !isOccupiedCell(step_above2)))
+              {
+                continue;
+              }
+            }
             return false;
           }
         }
