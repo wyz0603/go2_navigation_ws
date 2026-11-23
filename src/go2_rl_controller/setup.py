@@ -13,7 +13,7 @@ setup(
         ("share/" + package_name + "/config", glob("config/*.yaml")),
         ("share/" + package_name + "/policy", glob("policy/*")),
     ],
-    install_requires=["setuptools"],
+    install_requires=["setuptools", "onnxruntime"],
     zip_safe=True,
     entry_points={
         "console_scripts": [

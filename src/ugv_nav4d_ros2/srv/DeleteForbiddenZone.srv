@@ -1,6 +1,0 @@
-# Delete a forbidden zone by number (1-based, as shown in the RViz markers).
-# Remaining zones are renumbered.
-uint32 index
----
-bool success
-string message

@@ -32,9 +32,8 @@ def generate_launch_description():
     controller_config = os.path.join(controller_share, "config", "policy_controller.yaml")
     policy = os.path.join(controller_share, "policy", "policy.onnx")
     resource_path = os.path.dirname(description_share)
-    workspace_map = os.path.abspath(os.path.join(
-        bringup_share, "../../../../tools/output/building_obstacles_5cm.ply"))
-    default_map_file = workspace_map if os.path.isfile(workspace_map) else ""
+    workspace_pcd = os.path.abspath(os.path.join(
+        bringup_share, "../../../../tools/output/building_obstacles_5cm.pcd"))
 
     robot_description = ParameterValue(Command(["xacro ", model]), value_type=str)
     gazebo = IncludeLaunchDescription(
@@ -96,8 +95,10 @@ def generate_launch_description():
         DeclareLaunchArgument("navigation", default_value="false"),
         DeclareLaunchArgument("use_rviz", default_value="true",
                               description="Start RViz2 when navigation is enabled"),
-        DeclareLaunchArgument("map_file", default_value=default_map_file,
-                              description="Static world PLY; empty enables live global mapping"),
+        DeclareLaunchArgument("pcd_path", default_value=workspace_pcd,
+                              description="Static PCD map used to build the OctoMap"),
+        DeclareLaunchArgument("octomap_resolution", default_value="0.2"),
+        DeclareLaunchArgument("world_frame", default_value="world"),
         DeclareLaunchArgument("controller_config", default_value=controller_config),
         DeclareLaunchArgument("world", default_value=world),
         DeclareLaunchArgument("world_name", default_value="building_obstacles"),
@@ -121,7 +122,9 @@ def generate_launch_description():
             PythonLaunchDescriptionSource(os.path.join(
                 get_package_share_directory("go2_bringup"), "launch", "navigation.launch.py")),
             condition=IfCondition(LaunchConfiguration("navigation")),
-            launch_arguments={"map_file": LaunchConfiguration("map_file"),
+            launch_arguments={"pcd_path": LaunchConfiguration("pcd_path"),
+                              "octomap_resolution": LaunchConfiguration("octomap_resolution"),
+                              "world_frame": LaunchConfiguration("world_frame"),
                               "use_rviz": LaunchConfiguration("use_rviz")}.items(),
         ),
         gazebo,

@@ -5,8 +5,7 @@ find_package(ament_cmake REQUIRED)
 
 install(DIRECTORY
   config
-  worlds
-  DESTINATION share/${PROJECT_NAME}
+  DESTINATION share/
 )
 
 ament_package()

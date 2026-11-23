@@ -1,61 +1,72 @@
-"""Start the Go2 planner and Nav2 path controller for an existing simulation."""
+"""Run the jie_3d_nav global planner and path tracker with the Go2 controller."""
 import os
-import yaml
+
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 
 
-def launch_navigation(context):
+def navigation_nodes(context):
     share = get_package_share_directory('go2_bringup')
-    params = os.path.join(share, 'config', 'planner.yaml')
+    params = os.path.join(share, 'config', 'jie_navigation.yaml')
     rviz_config = os.path.join(share, 'config', 'navigation.rviz')
-    with open(params) as stream:
-        planner_params = yaml.safe_load(stream)['ugv_nav4d_ros2']['ros__parameters']
-    map_file = LaunchConfiguration('map_file').perform(context)
-    overrides = {'use_sim_time': True, 'load_mls_from_file': bool(map_file)}
-    if map_file:
-        map_file = os.path.abspath(os.path.expanduser(map_file))
-        if not os.path.isfile(map_file) or not map_file.lower().endswith('.ply'):
-            raise RuntimeError(f'map_file must be an existing PLY file: {map_file}')
-        overrides.update(mls_file_path=map_file, mls_file_type='ply')
+    pcd_path = LaunchConfiguration('pcd_path').perform(context)
+    if not pcd_path:
+        pcd_path = os.path.abspath(os.path.join(
+            share, '../../../../tools/output/building_obstacles_5cm.pcd'))
+    pcd_path = os.path.abspath(os.path.expanduser(pcd_path))
+    if not os.path.isfile(pcd_path) or not pcd_path.lower().endswith('.pcd'):
+        raise RuntimeError(f'pcd_path must be an existing PCD file: {pcd_path}')
+
+    frame = LaunchConfiguration('world_frame').perform(context)
+    resolution = ParameterValue(
+        LaunchConfiguration('octomap_resolution'), value_type=float)
     return [
-        Node(package='go2_bringup', executable='ground_goal_adapter.py', output='screen',
-             parameters=[{'use_sim_time': True,
-                          'ground_clearance': planner_params['distToGround'],
-                          'world_frame': planner_params['world_frame']}]),
-        IncludeLaunchDescription(PythonLaunchDescriptionSource(
-            os.path.join(share, 'launch', 'path_controller.launch.py'))),
-        Node(package='ugv_nav4d_ros2', executable='ugv_nav4d_ros2_node',
-             name='ugv_nav4d_ros2', output='screen',
-             parameters=[params, overrides],
-             remappings=[('/ugv_nav4d_ros2/pointcloud', '/go2/points')]),
-        Node(package='ugv_nav4d_ros2', executable='follow_path_client.py',
-             name='ugv_nav4d_follow_path_client', output='screen',
-             parameters=[params, {'use_sim_time': True}]),
-        Node(package='ugv_nav4d_ros2', executable='field_operations.py',
-             name='ugv_nav4d_field_operations', output='screen',
-             parameters=[params, {'use_sim_time': True}]),
-        Node(package='rviz2', executable='rviz2', name='navigation_rviz',
-             arguments=['-d', rviz_config], output='screen',
-             parameters=[{'use_sim_time': True}],
-             condition=IfCondition(LaunchConfiguration('use_rviz'))),
+        Node(
+            package='go2_bringup', executable='jie_pcd_octomap_node',
+            name='jie_pcd_octomap', output='screen',
+            parameters=[params, {
+                'use_sim_time': True,
+                'pcd_file': pcd_path,
+                'frame_id': frame,
+                'resolution': resolution,
+            }]),
+        Node(
+            package='octo_planner', executable='jie_path_node',
+            name='jie_path_node', output='screen',
+            parameters=[params, {'use_sim_time': True, 'frame_id': frame}]),
+        Node(
+            package='octo_planner', executable='go2_path_follower',
+            name='go2_path_follower', output='screen',
+            parameters=[params, {'use_sim_time': True, 'map_frame': frame}]),
+        Node(
+            package='go2_bringup', executable='jie_go2_navigation.py',
+            name='jie_go2_navigation', output='screen',
+            parameters=[params, {'use_sim_time': True, 'world_frame': frame}]),
+        Node(
+            package='rviz2', executable='rviz2', name='navigation_rviz',
+            arguments=['-d', rviz_config], output='screen',
+            parameters=[{'use_sim_time': True}],
+            condition=IfCondition(LaunchConfiguration('use_rviz'))),
     ]
 
 
 def generate_launch_description():
     share = get_package_share_directory('go2_bringup')
-    workspace_map = os.path.abspath(os.path.join(
-        share, '../../../../tools/output/building_obstacles_5cm.ply'))
-    default_map_file = workspace_map if os.path.isfile(workspace_map) else ''
+    workspace_pcd = os.path.abspath(os.path.join(
+        share, '../../../../tools/output/building_obstacles_5cm.pcd'))
     return LaunchDescription([
-        DeclareLaunchArgument('map_file', default_value=default_map_file,
-                              description='World-coordinate PLY; empty uses live pointcloud mapping'),
-        DeclareLaunchArgument('use_rviz', default_value='true',
-                              description='Start RViz2 with the Go2 navigation configuration'),
-        OpaqueFunction(function=launch_navigation),
+        DeclareLaunchArgument(
+            'pcd_path', default_value=workspace_pcd,
+            description='Static PCD obstacle map in the world frame'),
+        DeclareLaunchArgument('world_frame', default_value='world'),
+        DeclareLaunchArgument(
+            'octomap_resolution', default_value='0.2',
+            description='OctoMap voxel size in meters'),
+        DeclareLaunchArgument('use_rviz', default_value='true'),
+        OpaqueFunction(function=navigation_nodes),
     ])
