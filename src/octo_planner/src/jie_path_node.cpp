@@ -486,32 +486,78 @@ private:
     const GridIndex & idx, bool strict_direct_ground_support, int support_xy_radius_cells,
     int support_depth_cells) const
   {
-    if (strict_direct_ground_support) {
-      GridIndex below{idx.x, idx.y, idx.z - 1};
-      if (!isInsideMetricBounds(below)) {
-        return false;
-      }
-      const auto p = gridToWorld(below);
-      const octomap::OcTreeNode * node = octree_->search(p);
-      return node && octree_->isNodeOccupied(node);
+    const GridIndex direct_below{idx.x, idx.y, idx.z - 1};
+    if (!isInsideMetricBounds(direct_below)) {
+      return false;
     }
 
-    for (int dz = 1; dz <= std::max(1, support_depth_cells); ++dz) {
-      for (int dx = -support_xy_radius_cells; dx <= support_xy_radius_cells; ++dx) {
-        for (int dy = -support_xy_radius_cells; dy <= support_xy_radius_cells; ++dy) {
-          GridIndex below{idx.x + dx, idx.y + dy, idx.z - dz};
-          if (!isInsideMetricBounds(below)) {
+    // Reject vertical walls / columns / railings: a thin support surface (floor, ramp, stair tread)
+    // should not have occupied voxels stacking continuously 2+ cells directly below it.
+    const GridIndex deep_below1{idx.x, idx.y, idx.z - 2};
+    const GridIndex deep_below2{idx.x, idx.y, idx.z - 3};
+    if (isOccupiedCell(direct_below) && isInsideMetricBounds(deep_below1) && isOccupiedCell(deep_below1)) {
+      return false;
+    }
+    if (!isOccupiedCell(direct_below) && isInsideMetricBounds(deep_below1) && isOccupiedCell(deep_below1) &&
+        isInsideMetricBounds(deep_below2) && isOccupiedCell(deep_below2))
+    {
+      return false;
+    }
+
+    // Require direct support below (or within support_depth_cells directly below)
+    bool center_supported = false;
+    int support_z = idx.z - 1;
+    const int max_dz = strict_direct_ground_support ? 1 : std::max(1, support_depth_cells);
+    for (int dz = 1; dz <= max_dz; ++dz) {
+      const GridIndex below{idx.x, idx.y, idx.z - dz};
+      if (isInsideMetricBounds(below) && isOccupiedCell(below)) {
+        // Also ensure this supporting cell is not the top of a vertical column/railing
+        const GridIndex under_support{idx.x, idx.y, idx.z - dz - 1};
+        if (isInsideMetricBounds(under_support) && isOccupiedCell(under_support)) {
+          return false;
+        }
+        center_supported = true;
+        support_z = idx.z - dz;
+        break;
+      }
+    }
+    if (!center_supported) {
+      return false;
+    }
+
+    // Require neighborhood surface continuity so narrow 1-cell railings, wall tops, or isolated
+    // obstacle ledges are not marked traversable. A valid floor/ramp/stair tread has at least
+    // 4 supporting neighbors in its 3x3 horizontal neighborhood (within +/-1 cell in Z for slopes/stairs).
+    int neighbor_support_count = 0;
+    const int xy_r = std::max(1, support_xy_radius_cells);
+    for (int dx = -xy_r; dx <= xy_r; ++dx) {
+      for (int dy = -xy_r; dy <= xy_r; ++dy) {
+        if (dx == 0 && dy == 0) {
+          continue;
+        }
+        bool col_supported = false;
+        for (int sz = support_z - 1; sz <= support_z + 1; ++sz) {
+          const GridIndex n_sup{idx.x + dx, idx.y + dy, sz};
+          if (!isInsideMetricBounds(n_sup) || !isOccupiedCell(n_sup)) {
             continue;
           }
-          const auto p = gridToWorld(below);
-          const octomap::OcTreeNode * node = octree_->search(p);
-          if (node && octree_->isNodeOccupied(node)) {
-            return true;
+          // Ignore neighbor cells that are vertical walls/railings
+          const GridIndex n_above{idx.x + dx, idx.y + dy, sz + 1};
+          const GridIndex n_below{idx.x + dx, idx.y + dy, sz - 1};
+          if ((isInsideMetricBounds(n_above) && isOccupiedCell(n_above)) &&
+              (isInsideMetricBounds(n_below) && isOccupiedCell(n_below)))
+          {
+            continue;
           }
+          col_supported = true;
+          break;
+        }
+        if (col_supported) {
+          ++neighbor_support_count;
         }
       }
     }
-    return false;
+    return neighbor_support_count >= 5;
   }
 
   bool isOccupiedCell(const GridIndex & idx) const
