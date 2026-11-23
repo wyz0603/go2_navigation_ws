@@ -164,23 +164,40 @@ class Converter:
         mesh.apply_transform(transform)
         return mesh
 
-    def sample(self, spacing, seed=0, max_samples=5000000):
+    def sample(self, spacing, seed=0, max_samples=5000000, oversample=4, strip_undersides=True):
         if not self.collisions:
             raise ValueError('No collision surfaces found')
-        counts = [max(1, math.ceil(mesh.area / spacing ** 2)) for mesh in self.collisions]
-        total = sum(counts)
+        meshes = []
+        for mesh in self.collisions:
+            if strip_undersides and len(mesh.faces) > 0:
+                keep = mesh.face_normals[:, 2] >= -0.5
+                if not np.any(keep):
+                    continue
+                if not np.all(keep):
+                    mesh = mesh.submesh([np.where(keep)[0]], append=True)
+            meshes.append(mesh)
+        if not meshes:
+            raise ValueError('No collision surfaces remaining after filtering')
+        base_counts = [max(1, math.ceil(mesh.area / spacing ** 2)) for mesh in meshes]
+        total = sum(base_counts)
         if total > max_samples:
             raise ValueError(f'{total:,} samples required; increase --spacing or --max-samples')
+        factor = max(1, int(oversample))
         rng = np.random.default_rng(seed)
         chunks = []
-        for mesh, count in zip(self.collisions, counts):
-            points, _ = trimesh.sample.sample_surface(mesh, count, seed=rng)
+        for mesh, count in zip(meshes, base_counts):
+            points, _ = trimesh.sample.sample_surface(mesh, count * factor, seed=rng)
             if self.bounds is not None:
                 points = points[np.all((points >= self.bounds[0]) & (points <= self.bounds[1]), axis=1)]
             chunks.append(points)
         points = np.concatenate(chunks)
         if len(points) == 0:
             raise ValueError('No points inside export bounds')
+        if strip_undersides:
+            ground_mask = np.abs(points[:, 2]) <= spacing + 1e-4
+            if np.any(ground_mask):
+                points = points.copy()
+                points[ground_mask, 2] = 0.0
         # Density is approximate; keep one sampled point in each spacing-sized voxel.
         _, indices = np.unique(np.floor(points / spacing).astype(np.int64), axis=0, return_index=True)
         return points[np.sort(indices)].astype('<f4')

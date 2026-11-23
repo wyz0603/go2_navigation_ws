@@ -355,14 +355,14 @@ class PcdMapImportWindow(QWidget):
         self.resolution_spin.setDecimals(3)
         self.resolution_spin.setRange(0.01, 5.0)
         self.resolution_spin.setSingleStep(0.05)
-        self.resolution_spin.setValue(0.5)
+        self.resolution_spin.setValue(0.2)
         import_form.addRow("Octomap分辨率", self.resolution_spin)
 
         self.downsample_spin = QDoubleSpinBox()
         self.downsample_spin.setDecimals(3)
         self.downsample_spin.setRange(0.0, 2.0)
         self.downsample_spin.setSingleStep(0.05)
-        self.downsample_spin.setValue(0.1)
+        self.downsample_spin.setValue(0.0)
         import_form.addRow("预处理降采样(m)", self.downsample_spin)
 
         self.min_points_spin = QSpinBox()
@@ -636,7 +636,9 @@ class PcdMapImportWindow(QWidget):
         return xyz
 
     def _choose_pcd(self) -> None:
-        default_dir = Path("~/ros2_ws/src/odin_ros_driver/map").expanduser()
+        default_dir = Path(__file__).resolve().parents[4] / "tools" / "output"
+        if not default_dir.is_dir():
+            default_dir = Path("~/go2-navigation-refactor-0oGb2CbE/tools/output").expanduser()
         if not default_dir.is_dir():
             default_dir = Path.home()
         selected, _ = QFileDialog.getOpenFileName(
@@ -1094,21 +1096,9 @@ class PcdMapImportWindow(QWidget):
 
     @staticmethod
     def _estimate_voxel_count(points: np.ndarray, resolution: float) -> int:
-        point_count = int(points.shape[0])
-        sample_points = points
-        sample_limit = 200000
-        if point_count > sample_limit:
-            rng = np.random.default_rng(43)
-            indices = rng.choice(point_count, sample_limit, replace=False)
-            sample_points = points[indices]
-
-        min_bound = np.min(sample_points, axis=0)
-        keys = np.floor((sample_points - min_bound) / resolution).astype(np.int64)
-        unique_count = int(np.unique(keys, axis=0).shape[0])
-        if point_count <= sample_limit:
-            return unique_count
-        scaled_count = int(unique_count * (point_count / float(sample_points.shape[0])))
-        return min(point_count, max(unique_count, scaled_count))
+        min_bound = np.min(points, axis=0)
+        keys = np.floor((points - min_bound) / resolution).astype(np.int64)
+        return int(np.unique(keys, axis=0).shape[0])
 
     def _apply_statistical_filter(self) -> None:
         cloud = self._require_working_cloud()

@@ -95,7 +95,7 @@ def generate_launch_description():
         [
             DeclareLaunchArgument(
                 "resolution",
-                default_value="0.5",
+                default_value="0.2",
                 description="OctoMap resolution in meters for imported PCD maps.",
             ),
             DeclareLaunchArgument(
