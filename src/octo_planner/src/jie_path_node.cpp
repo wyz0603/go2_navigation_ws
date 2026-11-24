@@ -810,18 +810,20 @@ private:
     const double resolution = octree_->getResolution();
     marker.scale.x = resolution;
     marker.scale.y = resolution;
-    marker.scale.z = resolution;
+    marker.scale.z = (ns == "traversable_cells") ? std::min(0.05, resolution * 0.25) : resolution;
     marker.color.r = r_color;
     marker.color.g = g_color;
     marker.color.b = b_color;
     marker.color.a = a_color;
     marker.points.reserve(cells.size());
+    const float z_offset = (ns == "traversable_cells") ?
+      static_cast<float>(-0.35 * resolution) : 0.0F;
     for (const auto & c : cells) {
       const auto p = gridToWorld(c);
       geometry_msgs::msg::Point q;
       q.x = p.x();
       q.y = p.y();
-      q.z = p.z();
+      q.z = p.z() + z_offset;
       marker.points.push_back(q);
     }
     publisher->publish(marker);
@@ -947,18 +949,19 @@ private:
       m.pose.orientation.w = 1.0;
       m.scale.x = resolution;
       m.scale.y = resolution;
-      m.scale.z = resolution;
+      m.scale.z = std::min(0.05, resolution * 0.25);
       m.color.r = 0.20F;
       m.color.g = 0.95F;
       m.color.b = 0.55F;
-      m.color.a = 0.70F;
+      m.color.a = 0.85F;
     }
+    const float z_offset = static_cast<float>(-0.35 * resolution);
     for (const auto & c : traversable_cells_) {
       const auto p = gridToWorld(c);
       geometry_msgs::msg::Point q;
       q.x = p.x();
       q.y = p.y();
-      q.z = p.z();
+      q.z = p.z() + z_offset;
       int lvl = 4;
       if (q.z < 1.35) {
         lvl = 0;

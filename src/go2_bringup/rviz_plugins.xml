@@ -1,0 +1,11 @@
+<class_libraries>
+  <library path="go2_bringup_goal3d_tool">
+    <class type="go2_bringup::Goal3DTool"
+           base_class_type="rviz_common::Tool">
+      <description>
+        3D Goal Pose tool that picks the true 3D point on the rendered traversability map
+        and lets you drag to set goal yaw orientation.
+      </description>
+    </class>
+  </library>
+</class_libraries>

@@ -5,10 +5,8 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /OctoMap 3D Occupied (By Floor)1
-        - /OctoMap 3D Occupied (By Floor)1/Namespaces1
-        - /OctoMap 3D Traversable (By Floor)1
-        - /OctoMap 3D Traversable (By Floor)1/Namespaces1
+        - /Traversable Map (3D Surface)1
+        - /Traversable Map (3D Surface)1/Namespaces1
         - /jie_3d_nav Planned Path1
         - /RobotModel1
       Splitter Ratio: 0.5
@@ -17,6 +15,7 @@ Panels:
     Name: Selection
   - Class: rviz_common/Tool Properties
     Expanded:
+      - /3D Goal Pose1
       - /2D Goal Pose1
       - /Publish Point1
     Name: Tool Properties
@@ -70,23 +69,7 @@ Visualization Manager:
       Value: false
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
-      Name: OctoMap 3D Occupied (By Floor)
-      Namespaces:
-        1_floor_1_0m: true
-        2_floor_2_1p5m: true
-        3_floor_3_3p0m: true
-        4_floor_4_4p5m: false
-        5_roof_5p8m: false
-      Topic:
-        Depth: 1
-        Durability Policy: Transient Local
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /jie/octomap_occupied_levels
-      Value: true
-    - Class: rviz_default_plugins/MarkerArray
-      Enabled: true
-      Name: OctoMap 3D Traversable (By Floor)
+      Name: Traversable Map (3D Surface)
       Namespaces:
         1_floor_1_0m: true
         2_floor_2_1p5m: true
@@ -100,6 +83,22 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /jie/traversable_levels
       Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: false
+      Name: OctoMap 3D Occupied (By Floor)
+      Namespaces:
+        1_floor_1_0m: true
+        2_floor_2_1p5m: true
+        3_floor_3_3p0m: true
+        4_floor_4_4p5m: false
+        5_roof_5p8m: false
+      Topic:
+        Depth: 1
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /jie/octomap_occupied_levels
+      Value: false
     - Class: rviz_default_plugins/Marker
       Enabled: false
       Name: OctoMap 3D Preblocked Voxels
@@ -273,6 +272,8 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /initialpose
+    - Class: go2_bringup::Goal3DTool
+      Topic: /goal_pose
     - Class: rviz_default_plugins/SetGoal
       Topic:
         Depth: 5
