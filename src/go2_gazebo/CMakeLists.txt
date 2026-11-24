@@ -5,7 +5,7 @@ find_package(ament_cmake REQUIRED)
 
 install(DIRECTORY
   config
-  DESTINATION share/
+  DESTINATION share/${PROJECT_NAME}
 )
 
 ament_package()
