@@ -986,6 +986,13 @@ private:
       "4_floor_4_4p5m",
       "5_roof_5p8m"
     };
+    const float level_colors[5][3] = {
+      {0.18F, 0.88F, 0.45F},  // Floor 1 (0.0m): Emerald Green
+      {0.15F, 0.72F, 0.96F},  // Floor 2 (1.5m): Sky / Cyan Blue
+      {0.98F, 0.76F, 0.18F},  // Floor 3 (3.0m): Amber / Gold
+      {0.88F, 0.42F, 0.96F},  // Floor 4 (4.5m): Violet / Magenta
+      {0.96F, 0.36F, 0.36F}   // Roof (5.8m): Coral Red
+    };
     const double resolution = octree_->getResolution();
     const auto stamp = now();
     const auto frame_id = get_parameter("frame_id").as_string();
@@ -1003,10 +1010,10 @@ private:
       m.scale.x = resolution;
       m.scale.y = resolution;
       m.scale.z = std::min(0.05, resolution * 0.25);
-      m.color.r = 0.20F;
-      m.color.g = 0.95F;
-      m.color.b = 0.55F;
-      m.color.a = 0.85F;
+      m.color.r = level_colors[i][0];
+      m.color.g = level_colors[i][1];
+      m.color.b = level_colors[i][2];
+      m.color.a = 0.88F;
     }
     const float z_offset = static_cast<float>(-0.35 * resolution);
     for (const auto & c : traversable_cells_) {
