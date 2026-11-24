@@ -919,7 +919,7 @@ private:
 
     publishCellSetMarker(
       traversable_cells_, traversable_marker_pub_, "traversable_cells", 0.20F, 0.95F, 0.55F,
-      0.55F);
+      1.0F);
     publishTraversableLevelsMarker();
   }
 
@@ -1013,7 +1013,7 @@ private:
       m.color.r = level_colors[i][0];
       m.color.g = level_colors[i][1];
       m.color.b = level_colors[i][2];
-      m.color.a = 0.88F;
+      m.color.a = 1.0F;
     }
     const float z_offset = static_cast<float>(-0.35 * resolution);
     for (const auto & c : traversable_cells_) {
