@@ -24,6 +24,7 @@
 #include "sensor_msgs/point_cloud2_iterator.hpp"
 #include "std_msgs/msg/empty.hpp"
 #include "visualization_msgs/msg/marker.hpp"
+#include "visualization_msgs/msg/marker_array.hpp"
 
 namespace
 {
@@ -108,6 +109,7 @@ public:
     declare_parameter<std::string>("external_preblocked_marker_topic", "/edited_preblocked_cells_markers");
     declare_parameter<std::string>("edited_occupied_marker_topic", "/edited_occupied_markers");
     declare_parameter<std::string>("traversable_marker_topic", "/traversable_cells_markers");
+    declare_parameter<std::string>("traversable_levels_topic", "/jie/traversable_levels");
     declare_parameter<std::string>("risk_cost_topic", "/risk_cost_cells");
     declare_parameter<std::string>("frame_id", "map");
     declare_parameter<double>("robot_radius", 0.20);
@@ -171,6 +173,9 @@ public:
       preblocked_marker_topic, rclcpp::QoS(1).transient_local().reliable());
     traversable_marker_pub_ = create_publisher<visualization_msgs::msg::Marker>(
       traversable_marker_topic, rclcpp::QoS(1).transient_local().reliable());
+    traversable_levels_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>(
+      get_parameter("traversable_levels_topic").as_string(),
+      rclcpp::QoS(1).transient_local().reliable());
     risk_cost_pub_ = create_publisher<sensor_msgs::msg::PointCloud2>(
       risk_cost_topic, rclcpp::QoS(1).transient_local().reliable());
     get_meta_srv_ = create_service<jie_map_msgs::srv::GetNavigationMapMeta>(
@@ -911,6 +916,62 @@ private:
     publishCellSetMarker(
       traversable_cells_, traversable_marker_pub_, "traversable_cells", 0.20F, 0.95F, 0.55F,
       0.55F);
+    publishTraversableLevelsMarker();
+  }
+
+  void publishTraversableLevelsMarker() const
+  {
+    if (!octree_ || !traversable_levels_pub_) {
+      return;
+    }
+    const char * level_names[5] = {
+      "1_floor_1_0m",
+      "2_floor_2_1p5m",
+      "3_floor_3_3p0m",
+      "4_floor_4_4p5m",
+      "5_roof_5p8m"
+    };
+    const double resolution = octree_->getResolution();
+    const auto stamp = now();
+    const auto frame_id = get_parameter("frame_id").as_string();
+    visualization_msgs::msg::MarkerArray arr;
+    arr.markers.resize(5);
+    for (int i = 0; i < 5; ++i) {
+      auto & m = arr.markers[i];
+      m.header.stamp = stamp;
+      m.header.frame_id = frame_id;
+      m.ns = level_names[i];
+      m.id = i;
+      m.type = visualization_msgs::msg::Marker::CUBE_LIST;
+      m.action = visualization_msgs::msg::Marker::ADD;
+      m.pose.orientation.w = 1.0;
+      m.scale.x = resolution;
+      m.scale.y = resolution;
+      m.scale.z = resolution;
+      m.color.r = 0.20F;
+      m.color.g = 0.95F;
+      m.color.b = 0.55F;
+      m.color.a = 0.70F;
+    }
+    for (const auto & c : traversable_cells_) {
+      const auto p = gridToWorld(c);
+      geometry_msgs::msg::Point q;
+      q.x = p.x();
+      q.y = p.y();
+      q.z = p.z();
+      int lvl = 4;
+      if (q.z < 1.35) {
+        lvl = 0;
+      } else if (q.z < 2.85) {
+        lvl = 1;
+      } else if (q.z < 4.30) {
+        lvl = 2;
+      } else if (q.z < 5.75) {
+        lvl = 3;
+      }
+      arr.markers[lvl].points.push_back(q);
+    }
+    traversable_levels_pub_->publish(arr);
   }
 
   bool isCellTraversable(
@@ -1248,6 +1309,7 @@ private:
   rclcpp::Publisher<octomap_msgs::msg::Octomap>::SharedPtr octomap_pub_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr preblocked_marker_pub_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr traversable_marker_pub_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr traversable_levels_pub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr risk_cost_pub_;
   rclcpp::Service<jie_map_msgs::srv::GetNavigationMapMeta>::SharedPtr get_meta_srv_;
   rclcpp::Service<jie_map_msgs::srv::ExportNavigationSnapshot>::SharedPtr
