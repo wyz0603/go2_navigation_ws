@@ -13,6 +13,7 @@
   <depend>octomap</depend>
   <depend>octomap_msgs</depend>
   <depend>sensor_msgs</depend>
+  <depend>visualization_msgs</depend>
 
   <exec_depend>ament_index_python</exec_depend>
   <exec_depend>controller_manager</exec_depend>

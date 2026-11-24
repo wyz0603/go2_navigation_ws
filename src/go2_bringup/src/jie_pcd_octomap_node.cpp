@@ -16,6 +16,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "sensor_msgs/point_cloud2_iterator.hpp"
+#include "visualization_msgs/msg/marker.hpp"
 
 namespace
 {
@@ -191,12 +192,15 @@ public:
     declare_parameter<std::string>("pcd_file", "");
     declare_parameter<std::string>("frame_id", "world");
     declare_parameter<std::string>("octomap_topic", "/jie/octomap");
+    declare_parameter<std::string>("occupied_marker_topic", "/jie/octomap_occupied_markers");
     declare_parameter<std::string>("pointcloud_topic", "/jie/map_points");
     declare_parameter<double>("resolution", 0.2);
     declare_parameter<int>("min_points_per_voxel", 1);
 
     octomap_pub_ = create_publisher<octomap_msgs::msg::Octomap>(
       get_parameter("octomap_topic").as_string(), rclcpp::QoS(1).transient_local().reliable());
+    occupied_marker_pub_ = create_publisher<visualization_msgs::msg::Marker>(
+      get_parameter("occupied_marker_topic").as_string(), rclcpp::QoS(1).transient_local().reliable());
     pointcloud_pub_ = create_publisher<sensor_msgs::msg::PointCloud2>(
       get_parameter("pointcloud_topic").as_string(), rclcpp::QoS(1).transient_local().reliable());
 
@@ -249,6 +253,33 @@ private:
     map.header.frame_id = frame_id;
     octomap_pub_->publish(map);
 
+    visualization_msgs::msg::Marker marker;
+    marker.header = map.header;
+    marker.ns = "occupied_voxels";
+    marker.id = 0;
+    marker.type = visualization_msgs::msg::Marker::CUBE_LIST;
+    marker.action = visualization_msgs::msg::Marker::ADD;
+    marker.pose.orientation.w = 1.0;
+    const double res = tree_->getResolution();
+    marker.scale.x = res;
+    marker.scale.y = res;
+    marker.scale.z = res;
+    marker.color.r = 0.95F;
+    marker.color.g = 0.45F;
+    marker.color.b = 0.15F;
+    marker.color.a = 0.85F;
+    for (auto it = tree_->begin_leafs(); it != tree_->end_leafs(); ++it) {
+      if (!tree_->isNodeOccupied(*it)) {
+        continue;
+      }
+      geometry_msgs::msg::Point pt;
+      pt.x = it.getX();
+      pt.y = it.getY();
+      pt.z = it.getZ();
+      marker.points.push_back(pt);
+    }
+    occupied_marker_pub_->publish(marker);
+
     sensor_msgs::msg::PointCloud2 cloud;
     cloud.header = map.header;
     sensor_msgs::PointCloud2Modifier modifier(cloud);
@@ -266,6 +297,7 @@ private:
 
   std::unique_ptr<octomap::OcTree> tree_;
   rclcpp::Publisher<octomap_msgs::msg::Octomap>::SharedPtr octomap_pub_;
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr occupied_marker_pub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud_pub_;
 };
 

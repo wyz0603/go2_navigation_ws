@@ -5,9 +5,10 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /Static Map Points1
+        - /OctoMap 3D Occupied Voxels1
+        - /OctoMap 3D Traversable Voxels1
         - /jie_3d_nav Planned Path1
-        -         - /RobotModel1
+        - /RobotModel1
       Splitter Ratio: 0.5
     Tree Height: 500
   - Class: rviz_common/Selection
@@ -65,6 +66,42 @@ Visualization Manager:
         {}
       Update Interval: 0
       Value: false
+    - Class: rviz_default_plugins/Marker
+      Enabled: true
+      Name: OctoMap 3D Occupied Voxels
+      Namespaces:
+        occupied_voxels: true
+      Topic:
+        Depth: 1
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /jie/octomap_occupied_markers
+      Value: true
+    - Class: rviz_default_plugins/Marker
+      Enabled: true
+      Name: OctoMap 3D Traversable Voxels
+      Namespaces:
+        traversable_cells: true
+      Topic:
+        Depth: 1
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /jie/traversable_cells_markers
+      Value: true
+    - Class: rviz_default_plugins/Marker
+      Enabled: false
+      Name: OctoMap 3D Preblocked Voxels
+      Namespaces:
+        preblocked_cells: true
+      Topic:
+        Depth: 1
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /jie/preblocked_cells_markers
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -77,13 +114,13 @@ Visualization Manager:
       Color: 0; 220; 160
       Color Transformer: FlatColor
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 0
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: Static Map Points
+      Name: Static Map Points (Raw PCD)
       Position Transformer: XYZ
       Selectable: true
       Size (Pixels): 2
@@ -97,7 +134,7 @@ Visualization Manager:
         Value: /jie/map_points
       Use Fixed Frame: true
       Use rainbow: false
-      Value: true
+      Value: false
     - Alpha: 1
       Buffer Length: 1
       Class: rviz_default_plugins/Path
