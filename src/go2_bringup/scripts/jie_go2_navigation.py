@@ -21,6 +21,8 @@ class JieGo2Navigation(Node):
         self.world_frame = self.declare_parameter('world_frame', 'world').value
         self.base_frame = self.declare_parameter('base_frame', 'base').value
         self.goal_input_topic = self.declare_parameter('goal_input_topic', '/goal_pose').value
+        self.clicked_point_topic = self.declare_parameter(
+            'clicked_point_topic', '/clicked_point').value
         self.plan_start_topic = self.declare_parameter('plan_start_topic', '/jie/start_point').value
         self.plan_goal_topic = self.declare_parameter('plan_goal_topic', '/jie/goal_point').value
         self.plan_goal_pose_topic = self.declare_parameter(
@@ -58,6 +60,8 @@ class JieGo2Navigation(Node):
         self.create_subscription(
             PoseStamped, self.goal_input_topic, self.on_goal, 10)
         self.create_subscription(
+            PointStamped, self.clicked_point_topic, self.on_clicked_point, 10)
+        self.create_subscription(
             Path, self.path_topic, self.on_path, latched)
         self.create_subscription(
             Bool, self.controller_active_topic, self.on_controller_active, latched)
@@ -78,6 +82,13 @@ class JieGo2Navigation(Node):
         self.get_logger().info(
             f'Go2 jie navigation ready: goal={self.goal_input_topic}, '
             f'path={self.path_topic}, base={self.base_frame}, frame={self.world_frame}')
+
+    def on_clicked_point(self, msg):
+        goal = PoseStamped()
+        goal.header = msg.header
+        goal.pose.position = copy.deepcopy(msg.point)
+        goal.pose.orientation.w = 1.0
+        self.on_goal(goal)
 
     def on_goal(self, msg):
         if msg.header.frame_id and msg.header.frame_id != self.world_frame:
