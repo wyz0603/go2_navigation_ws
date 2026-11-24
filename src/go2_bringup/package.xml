@@ -21,7 +21,6 @@
 
   <exec_depend>ament_index_python</exec_depend>
   <exec_depend>controller_manager</exec_depend>
-  <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>go2_description</exec_depend>
   <exec_depend>go2_gazebo</exec_depend>
   <exec_depend>go2_rl_controller</exec_depend>
