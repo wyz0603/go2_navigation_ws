@@ -915,10 +915,63 @@ private:
       }
     }
 
+    filterToMainTraversableComponent();
+
     publishCellSetMarker(
       traversable_cells_, traversable_marker_pub_, "traversable_cells", 0.20F, 0.95F, 0.55F,
       0.55F);
     publishTraversableLevelsMarker();
+  }
+
+  void filterToMainTraversableComponent()
+  {
+    if (traversable_cells_.empty()) {
+      return;
+    }
+
+    const auto dirs = make26Directions();
+    std::unordered_set<GridIndex, GridIndexHash> unvisited = traversable_cells_;
+    std::unordered_set<GridIndex, GridIndexHash> largest_component;
+    std::size_t removed_components = 0;
+
+    while (!unvisited.empty()) {
+      const GridIndex seed = *unvisited.begin();
+      unvisited.erase(seed);
+      std::unordered_set<GridIndex, GridIndexHash> comp;
+      std::vector<GridIndex> stack;
+      comp.insert(seed);
+      stack.push_back(seed);
+
+      while (!stack.empty()) {
+        const GridIndex cur = stack.back();
+        stack.pop_back();
+        for (const auto & d : dirs) {
+          const GridIndex nb{cur.x + d.x, cur.y + d.y, cur.z + d.z};
+          auto it = unvisited.find(nb);
+          if (it != unvisited.end()) {
+            unvisited.erase(it);
+            comp.insert(nb);
+            stack.push_back(nb);
+          }
+        }
+      }
+
+      if (comp.size() > largest_component.size()) {
+        if (!largest_component.empty()) {
+          ++removed_components;
+        }
+        largest_component = std::move(comp);
+      } else {
+        ++removed_components;
+      }
+    }
+
+    const std::size_t before_count = traversable_cells_.size();
+    traversable_cells_ = std::move(largest_component);
+    RCLCPP_INFO(
+      get_logger(),
+      "Traversable connected-component filter: kept=%zu/%zu cells (removed %zu isolated regions)",
+      traversable_cells_.size(), before_count, removed_components);
   }
 
   void publishTraversableLevelsMarker() const
@@ -1056,10 +1109,16 @@ private:
     bool strict_direct_ground_support, int support_xy_radius_cells, int support_depth_cells,
     GridIndex & out) const
   {
-    if (isCellTraversable(
-        seed, robot_radius, require_ground_support, strict_direct_ground_support,
-        support_xy_radius_cells, support_depth_cells))
-    {
+    auto is_valid_cell = [&](const GridIndex & c) {
+      if (!traversable_cells_.empty()) {
+        return traversable_cells_.find(c) != traversable_cells_.end();
+      }
+      return isCellTraversable(
+        c, robot_radius, require_ground_support, strict_direct_ground_support,
+        support_xy_radius_cells, support_depth_cells);
+    };
+
+    if (is_valid_cell(seed)) {
       out = seed;
       return true;
     }
@@ -1073,20 +1132,14 @@ private:
             }
 
             GridIndex c1{seed.x + dx, seed.y + dy, seed.z + dz};
-            if (isCellTraversable(
-                c1, robot_radius, require_ground_support, strict_direct_ground_support,
-                support_xy_radius_cells, support_depth_cells))
-            {
+            if (is_valid_cell(c1)) {
               out = c1;
               return true;
             }
 
             if (dz > 0) {
               GridIndex c2{seed.x + dx, seed.y + dy, seed.z - dz};
-              if (isCellTraversable(
-                  c2, robot_radius, require_ground_support, strict_direct_ground_support,
-                  support_xy_radius_cells, support_depth_cells))
-              {
+              if (is_valid_cell(c2)) {
                 out = c2;
                 return true;
               }
@@ -1212,10 +1265,12 @@ private:
         if (closed_set.find(nbr) != closed_set.end()) {
           continue;
         }
-        if (!isCellTraversable(
+        const bool nbr_ok = !traversable_cells_.empty() ?
+          (traversable_cells_.find(nbr) != traversable_cells_.end()) :
+          isCellTraversable(
             nbr, robot_radius, require_ground_support, strict_direct_ground_support,
-            support_xy_radius_cells, support_depth_cells))
-        {
+            support_xy_radius_cells, support_depth_cells);
+        if (!nbr_ok) {
           continue;
         }
         const double step_cost = euclidean(current.idx, nbr);
