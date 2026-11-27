@@ -1,6 +1,6 @@
 # Go2 导航工程
 
-ROS 2 Jazzy 仿真与导航工作区。默认导航使用 `jie_3d_nav` 的三维 A* 全局规划器和 D1 路径跟踪器：PCD 地图加载为 OctoMap，Go2 适配层负责目标、TF 和速度模式。
+ROS 2 Jazzy 仿真与导航工作区。默认导航使用 `jie_3d_nav` 三维 A* 全局规划、SCAN 实时局部避障和 D1 路径跟踪。PCD 地图加载为 OctoMap，实时雷达点云经过高度与地面过滤后输入 SCAN，Go2 适配层负责目标、TF 和速度模式。
 
 ## 启动
 
@@ -19,7 +19,7 @@ ros2 launch go2_bringup accessible.launch.py
 
 ## 工程结构
 
-- `src/<package>/`：8 个 ROS 包，直接单层放置
+- `src/<package>/`：10 个 ROS 包，直接单层放置
 - `tools/`：Gazebo 场景导出与 PCD 地图生成
 - `docs/`：构建、启动与地图说明
 

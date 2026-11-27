@@ -28,6 +28,10 @@
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
   <exec_depend>octo_planner</exec_depend>
+  <exec_depend>scan_planner</exec_depend>
+  <exec_depend>sensor_msgs_py</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-scipy</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>robot_sim_worlds</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>

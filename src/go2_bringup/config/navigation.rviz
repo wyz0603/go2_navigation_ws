@@ -248,6 +248,22 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: false
       Value: false
+    - Class: rviz_default_plugins/Path
+      Name: SCAN Local Path
+      Enabled: true
+      Color: 255; 130; 30
+      Alpha: 1
+      Buffer Length: 1
+      Line Style: Billboards
+      Line Width: 0.04
+      Pose Style: None
+      Topic:
+        Depth: 1
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /scan/local_path
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48

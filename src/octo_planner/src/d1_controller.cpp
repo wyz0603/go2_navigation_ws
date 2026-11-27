@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cmath>
+#include <chrono>
 #include <cctype>
 #include <limits>
 #include <memory>
@@ -36,6 +37,8 @@ public:
     goal_reached_(false)
   {
     declare_parameter<std::string>("path_topic", "/planned_path");
+    declare_parameter<std::string>("local_path_topic", "");
+    declare_parameter<double>("local_path_timeout", 1.0);
     declare_parameter<std::string>("start_navigation_topic", "/start_navigation");
     declare_parameter<std::string>("stop_navigation_topic", "/stop_navigation");
     declare_parameter<std::string>("cmd_vel_topic", "/cmd_vel");
@@ -93,6 +96,16 @@ public:
     path_sub_ = create_subscription<nav_msgs::msg::Path>(
       path_topic, rclcpp::QoS(1).transient_local().reliable(),
       std::bind(&D1ControllerNode::onPath, this, std::placeholders::_1));
+    local_planning_ = !get_parameter("local_path_topic").as_string().empty();
+    if (local_planning_) {
+      const double timeout = get_parameter("local_path_timeout").as_double();
+      if (!std::isfinite(timeout) || timeout <= 0.0) {
+        throw std::invalid_argument("local_path_timeout must be positive and finite");
+      }
+      local_path_sub_ = create_subscription<nav_msgs::msg::Path>(
+        get_parameter("local_path_topic").as_string(), rclcpp::QoS(1).reliable(),
+        std::bind(&D1ControllerNode::onLocalPath, this, std::placeholders::_1));
+    }
     start_navigation_sub_ = create_subscription<std_msgs::msg::Bool>(
       start_navigation_topic, rclcpp::QoS(10).reliable(),
       std::bind(&D1ControllerNode::onStartNavigation, this, std::placeholders::_1));
@@ -201,6 +214,8 @@ private:
   void activatePlan(const std::vector<geometry_msgs::msg::PoseStamped> & plan)
   {
     global_plan_ = plan;
+    local_plan_.clear();
+    plan_started_ = now();
     target_index_ = findInitialTargetIndex3D();
     pose_adjusting_ = false;
     goal_reached_ = global_plan_.empty();
@@ -214,6 +229,7 @@ private:
   void clearActivePlan()
   {
     global_plan_.clear();
+    local_plan_.clear();
     target_index_ = 0;
     pose_adjusting_ = false;
     goal_reached_ = true;
@@ -269,9 +285,27 @@ private:
       return;
     }
 
+    // Global navigation remains active while SCAN waits for a safe route.
+    // This gate also covers final yaw adjustment and a stopped planner process.
+    if (local_planning_ && !localPathFresh()) {
+      publishCmd(geometry_msgs::msg::Twist());
+      return;
+    }
+    if (local_planning_) {
+      geometry_msgs::msg::PoseStamped final_pose_base;
+      if (!transformToBase(global_plan_.back(), final_pose_base)) {
+        publishCmd(geometry_msgs::msg::Twist());
+        return;
+      }
+      const auto & p = final_pose_base.pose.position;
+      pose_adjusting_ = std::hypot(p.x, p.y) <
+        get_parameter("goal_position_tolerance").as_double() && std::abs(p.z) < 0.4;
+    }
+
     if (pose_adjusting_) {
       geometry_msgs::msg::PoseStamped final_pose_base;
       if (!transformToBase(global_plan_.back(), final_pose_base)) {
+        publishCmd(geometry_msgs::msg::Twist());
         return;
       }
       trackFinalPose(final_pose_base, global_plan_.back());
@@ -279,15 +313,19 @@ private:
     }
 
     TrackingTarget target;
-    if (!selectTrackingTarget(target)) {
+    const bool target_available = local_planning_ ?
+      selectLocalTrackingTarget(target) : selectTrackingTarget(target);
+    if (!target_available) {
+      publishCmd(geometry_msgs::msg::Twist());
       return;
     }
 
-    if (isFinalTrackingPointReached(target)) {
+    if (!local_planning_ && isFinalTrackingPointReached(target)) {
       pose_adjusting_ = true;
       RCLCPP_INFO(get_logger(), "Final tracking point reached. Switching to final yaw adjustment.");
       geometry_msgs::msg::PoseStamped final_pose_base;
       if (!transformToBase(global_plan_.back(), final_pose_base)) {
+        publishCmd(geometry_msgs::msg::Twist());
         return;
       }
       trackFinalPose(final_pose_base, global_plan_.back());
@@ -319,6 +357,10 @@ private:
       target.base_y * cross_track_angular_gain,
       -get_parameter("max_angular_speed").as_double(),
       get_parameter("max_angular_speed").as_double());
+    if (local_planning_) {
+      // Turn toward a curved local route before advancing along it.
+      cmd_vel.linear.x *= std::max(0.0, 1.0 - std::abs(heading_error) / 0.6);
+    }
     cmd_vel.linear.x = applyDeadband(cmd_vel.linear.x, get_parameter("linear_deadband").as_double());
     cmd_vel.linear.y = applyDeadband(cmd_vel.linear.y, get_parameter("lateral_deadband").as_double());
     cmd_vel.angular.z = applyDeadband(cmd_vel.angular.z, get_parameter("angular_deadband").as_double());
@@ -348,6 +390,69 @@ private:
     double base_x;
     double base_y;
   };
+
+  void onLocalPath(const nav_msgs::msg::Path::SharedPtr msg)
+  {
+    local_plan_.clear();
+    if (!isNavigationActive()) return;
+    const double age = (now() - rclcpp::Time(msg->header.stamp)).seconds();
+    const auto frame = get_parameter("map_frame").as_string();
+    if (msg->poses.size() < 2 || msg->header.frame_id != frame ||
+        rclcpp::Time(msg->header.stamp) < plan_started_ || age < -0.1 ||
+        age > get_parameter("local_path_timeout").as_double()) {
+      publishCmd(geometry_msgs::msg::Twist());
+      return;
+    }
+    for (const auto & pose : msg->poses) {
+      const auto & p = pose.pose.position;
+      if ((!pose.header.frame_id.empty() && pose.header.frame_id != frame) ||
+          !std::isfinite(p.x) || !std::isfinite(p.y) || !std::isfinite(p.z)) {
+        publishCmd(geometry_msgs::msg::Twist());
+        return;
+      }
+    }
+    local_plan_ = msg->poses;
+    local_stamp_ = rclcpp::Time(msg->header.stamp);
+    local_received_ = std::chrono::steady_clock::now();
+  }
+
+  bool localPathFresh() const
+  {
+    const double timeout = get_parameter("local_path_timeout").as_double();
+    const double age = (now() - local_stamp_).seconds();
+    const double elapsed = std::chrono::duration<double>(
+      std::chrono::steady_clock::now() - local_received_).count();
+    return local_plan_.size() >= 2 && age >= -0.1 && age <= timeout && elapsed <= timeout;
+  }
+
+  bool selectLocalTrackingTarget(TrackingTarget & target)
+  {
+    RobotPose2D robot;
+    if (!lookupRobotPose2D(robot)) return false;
+    std::size_t nearest = 0;
+    double distance = std::numeric_limits<double>::max();
+    for (std::size_t i = 0; i < local_plan_.size(); ++i) {
+      const auto & p = local_plan_[i].pose.position;
+      const double candidate = std::hypot(std::hypot(p.x - robot.x, p.y - robot.y),
+                                          p.z - robot.z);
+      if (candidate < distance) { nearest = i; distance = candidate; }
+    }
+    if (distance > 0.6) return false;
+    std::size_t index = nearest;
+    double length = 0.0;
+    const double lookahead = get_parameter("lookahead_distance").as_double();
+    while (index + 1 < local_plan_.size() && length < lookahead) {
+      const auto & a = local_plan_[index].pose.position;
+      const auto & b = local_plan_[index + 1].pose.position;
+      length += std::hypot(b.x - a.x, b.y - a.y);
+      ++index;
+    }
+    const auto & p = local_plan_[index].pose.position;
+    const double dx = p.x - robot.x, dy = p.y - robot.y;
+    target.base_x = std::cos(robot.yaw) * dx + std::sin(robot.yaw) * dy;
+    target.base_y = -std::sin(robot.yaw) * dx + std::cos(robot.yaw) * dy;
+    return std::hypot(dx, dy) > 0.05;
+  }
 
   bool isFinalTrackingPointReached(const TrackingTarget & target) const
   {
@@ -436,6 +541,10 @@ private:
       try {
         const auto tf = tf_buffer_.lookupTransform(
           map_frame, base_frame, tf2::TimePointZero, tf2::durationFromSec(0.05));
+        if (local_planning_ && (now() - rclcpp::Time(tf.header.stamp)).seconds() > 0.5) {
+          last_error = "robot transform is stale";
+          continue;
+        }
         if (active_base_frame_ != base_frame) {
           active_base_frame_ = base_frame;
           RCLCPP_INFO(get_logger(), "Using robot base frame for tracking: %s", base_frame.c_str());
@@ -683,6 +792,7 @@ private:
     double final_yaw_error = 0.0;
     if (align_final_yaw) {
       if (!computeFinalYawErrorXY(final_pose_map, final_yaw_error)) {
+        publishCmd(geometry_msgs::msg::Twist());
         return;
       }
       cmd_vel.angular.z = clamp(final_yaw_error * final_yaw_gain, -max_angular, max_angular);
@@ -905,6 +1015,7 @@ private:
   tf2_ros::TransformListener tf_listener_;
 
   rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr path_sub_;
+  rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr local_path_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr start_navigation_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr stop_navigation_sub_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr manual_cmd_sub_;
@@ -916,6 +1027,11 @@ private:
 
   std::vector<geometry_msgs::msg::PoseStamped> global_plan_;
   std::vector<geometry_msgs::msg::PoseStamped> pending_plan_;
+  std::vector<geometry_msgs::msg::PoseStamped> local_plan_;
+  bool local_planning_{false};
+  rclcpp::Time plan_started_{0, 0, RCL_ROS_TIME};
+  rclcpp::Time local_stamp_{0, 0, RCL_ROS_TIME};
+  std::chrono::steady_clock::time_point local_received_{};
   int target_index_;
   bool pose_adjusting_;
   bool goal_reached_;

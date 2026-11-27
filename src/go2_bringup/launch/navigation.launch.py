@@ -1,4 +1,4 @@
-"""Run the jie_3d_nav global planner and path tracker with the Go2 controller."""
+"""Run global A*, SCAN local avoidance and Go2 path tracking."""
 import os
 
 from ament_index_python.packages import get_package_share_directory
@@ -39,6 +39,14 @@ def navigation_nodes(context):
             package='octo_planner', executable='jie_path_node',
             name='jie_path_node', output='screen',
             parameters=[params, {'use_sim_time': True, 'frame_id': frame}]),
+        Node(
+            package='go2_bringup', executable='obstacle_height_filter.py',
+            name='obstacle_height_filter', output='screen',
+            parameters=[params, {'use_sim_time': True, 'world_frame': frame}]),
+        Node(
+            package='scan_planner', executable='scan_local_planner',
+            name='scan_local_planner', output='screen',
+            parameters=[params, {'use_sim_time': True, 'world_frame': frame}]),
         Node(
             package='octo_planner', executable='go2_path_follower',
             name='go2_path_follower', output='screen',

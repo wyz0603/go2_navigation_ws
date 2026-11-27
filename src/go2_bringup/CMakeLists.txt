@@ -46,7 +46,7 @@ install(DIRECTORY launch config
   DESTINATION share/${PROJECT_NAME}
   PATTERN "__pycache__" EXCLUDE)
 
-install(PROGRAMS scripts/jie_go2_navigation.py
+install(PROGRAMS scripts/jie_go2_navigation.py scripts/obstacle_height_filter.py
   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

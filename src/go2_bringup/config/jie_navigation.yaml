@@ -42,6 +42,8 @@ go2_path_follower:
   ros__parameters:
     use_sim_time: true
     path_topic: /jie/planned_path
+    local_path_topic: /scan/local_path
+    local_path_timeout: 1.0
     start_navigation_topic: /jie/start_navigation
     stop_navigation_topic: /jie/stop_navigation
     cmd_vel_topic: /cmd_vel_nav
@@ -57,7 +59,7 @@ go2_path_follower:
     robot_center_offset_z: 0.0
     require_start_command: true
     control_frequency: 20.0
-    lookahead_distance: 0.55
+    lookahead_distance: 0.3
     tracking_point_reached_xy_tolerance: 0.30
     tracking_point_marker_scale: 0.28
     enable_tracking_debug_view: false
@@ -67,7 +69,7 @@ go2_path_follower:
     lateral_gain: 0.8
     heading_gain: 0.8
     cross_track_angular_gain: 0.5
-    final_yaw_gain: 0.3
+    final_yaw_gain: 1.5
     enable_lateral_motion: false
     max_linear_speed: 0.25
     max_lateral_speed: 0.15
@@ -92,3 +94,24 @@ jie_go2_navigation:
     start_navigation_topic: /jie/start_navigation
     stop_navigation_topic: /jie/stop_navigation
     navigation_mode_service: /go2/set_navigation
+
+scan_local_planner:
+  ros__parameters:
+    use_sim_time: true
+    world_frame: world
+    base_frame: base
+    robot_radius: 0.25
+    footprint_offset: 0.15
+    lookahead_distance: 0.3
+
+obstacle_height_filter:
+  ros__parameters:
+    use_sim_time: true
+    world_frame: world
+    base_frame: base
+    min_relative_height: -0.25
+    max_relative_height: 0.45
+    ground_clearance: 0.35
+    max_step_height: 0.45
+    terrain_tolerance: 0.08
+    terrain_radius: 0.15
