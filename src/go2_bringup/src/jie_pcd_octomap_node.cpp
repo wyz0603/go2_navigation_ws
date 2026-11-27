@@ -16,6 +16,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "sensor_msgs/point_cloud2_iterator.hpp"
+#include "visualization_msgs/msg/marker.hpp"
+#include "visualization_msgs/msg/marker_array.hpp"
 
 namespace
 {
@@ -191,12 +193,18 @@ public:
     declare_parameter<std::string>("pcd_file", "");
     declare_parameter<std::string>("frame_id", "world");
     declare_parameter<std::string>("octomap_topic", "/jie/octomap");
+    declare_parameter<std::string>("occupied_marker_topic", "/jie/octomap_occupied_markers");
+    declare_parameter<std::string>("occupied_levels_topic", "/jie/octomap_occupied_levels");
     declare_parameter<std::string>("pointcloud_topic", "/jie/map_points");
     declare_parameter<double>("resolution", 0.2);
     declare_parameter<int>("min_points_per_voxel", 1);
 
     octomap_pub_ = create_publisher<octomap_msgs::msg::Octomap>(
       get_parameter("octomap_topic").as_string(), rclcpp::QoS(1).transient_local().reliable());
+    occupied_marker_pub_ = create_publisher<visualization_msgs::msg::Marker>(
+      get_parameter("occupied_marker_topic").as_string(), rclcpp::QoS(1).transient_local().reliable());
+    occupied_levels_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>(
+      get_parameter("occupied_levels_topic").as_string(), rclcpp::QoS(1).transient_local().reliable());
     pointcloud_pub_ = create_publisher<sensor_msgs::msg::PointCloud2>(
       get_parameter("pointcloud_topic").as_string(), rclcpp::QoS(1).transient_local().reliable());
 
@@ -249,6 +257,74 @@ private:
     map.header.frame_id = frame_id;
     octomap_pub_->publish(map);
 
+    visualization_msgs::msg::Marker marker;
+    marker.header = map.header;
+    marker.ns = "occupied_voxels";
+    marker.id = 0;
+    marker.type = visualization_msgs::msg::Marker::CUBE_LIST;
+    marker.action = visualization_msgs::msg::Marker::ADD;
+    marker.pose.orientation.w = 1.0;
+    const double res = tree_->getResolution();
+    marker.scale.x = res;
+    marker.scale.y = res;
+    marker.scale.z = res;
+    marker.color.r = 0.95F;
+    marker.color.g = 0.45F;
+    marker.color.b = 0.15F;
+    marker.color.a = 0.85F;
+    for (auto it = tree_->begin_leafs(); it != tree_->end_leafs(); ++it) {
+      if (!tree_->isNodeOccupied(*it)) {
+        continue;
+      }
+      geometry_msgs::msg::Point pt;
+      pt.x = it.getX();
+      pt.y = it.getY();
+      pt.z = it.getZ();
+      marker.points.push_back(pt);
+    }
+    occupied_marker_pub_->publish(marker);
+
+    // Also publish floor-sliced MarkerArray so RViz users can hide roof/upper floors with 1 click
+    const char * level_names[5] = {
+      "1_floor_1_0m",
+      "2_floor_2_1p5m",
+      "3_floor_3_3p0m",
+      "4_floor_4_4p5m",
+      "5_roof_5p8m"
+    };
+    visualization_msgs::msg::MarkerArray level_array;
+    level_array.markers.resize(5);
+    for (int i = 0; i < 5; ++i) {
+      auto & m = level_array.markers[i];
+      m.header = map.header;
+      m.ns = level_names[i];
+      m.id = i;
+      m.type = visualization_msgs::msg::Marker::CUBE_LIST;
+      m.action = visualization_msgs::msg::Marker::ADD;
+      m.pose.orientation.w = 1.0;
+      m.scale.x = res;
+      m.scale.y = res;
+      m.scale.z = res;
+      m.color.r = 0.95F;
+      m.color.g = 0.45F;
+      m.color.b = 0.15F;
+      m.color.a = 0.85F;
+    }
+    for (const auto & pt : marker.points) {
+      int lvl = 4;
+      if (pt.z < 1.35) {
+        lvl = 0;
+      } else if (pt.z < 2.85) {
+        lvl = 1;
+      } else if (pt.z < 4.30) {
+        lvl = 2;
+      } else if (pt.z < 5.75) {
+        lvl = 3;
+      }
+      level_array.markers[lvl].points.push_back(pt);
+    }
+    occupied_levels_pub_->publish(level_array);
+
     sensor_msgs::msg::PointCloud2 cloud;
     cloud.header = map.header;
     sensor_msgs::PointCloud2Modifier modifier(cloud);
@@ -266,6 +342,8 @@ private:
 
   std::unique_ptr<octomap::OcTree> tree_;
   rclcpp::Publisher<octomap_msgs::msg::Octomap>::SharedPtr octomap_pub_;
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr occupied_marker_pub_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr occupied_levels_pub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud_pub_;
 };
 

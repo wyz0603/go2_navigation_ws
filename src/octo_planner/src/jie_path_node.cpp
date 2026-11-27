@@ -24,6 +24,7 @@
 #include "sensor_msgs/point_cloud2_iterator.hpp"
 #include "std_msgs/msg/empty.hpp"
 #include "visualization_msgs/msg/marker.hpp"
+#include "visualization_msgs/msg/marker_array.hpp"
 
 namespace
 {
@@ -108,6 +109,7 @@ public:
     declare_parameter<std::string>("external_preblocked_marker_topic", "/edited_preblocked_cells_markers");
     declare_parameter<std::string>("edited_occupied_marker_topic", "/edited_occupied_markers");
     declare_parameter<std::string>("traversable_marker_topic", "/traversable_cells_markers");
+    declare_parameter<std::string>("traversable_levels_topic", "/jie/traversable_levels");
     declare_parameter<std::string>("risk_cost_topic", "/risk_cost_cells");
     declare_parameter<std::string>("frame_id", "map");
     declare_parameter<double>("robot_radius", 0.20);
@@ -171,6 +173,9 @@ public:
       preblocked_marker_topic, rclcpp::QoS(1).transient_local().reliable());
     traversable_marker_pub_ = create_publisher<visualization_msgs::msg::Marker>(
       traversable_marker_topic, rclcpp::QoS(1).transient_local().reliable());
+    traversable_levels_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>(
+      get_parameter("traversable_levels_topic").as_string(),
+      rclcpp::QoS(1).transient_local().reliable());
     risk_cost_pub_ = create_publisher<sensor_msgs::msg::PointCloud2>(
       risk_cost_topic, rclcpp::QoS(1).transient_local().reliable());
     get_meta_srv_ = create_service<jie_map_msgs::srv::GetNavigationMapMeta>(
@@ -486,32 +491,61 @@ private:
     const GridIndex & idx, bool strict_direct_ground_support, int support_xy_radius_cells,
     int support_depth_cells) const
   {
-    if (strict_direct_ground_support) {
-      GridIndex below{idx.x, idx.y, idx.z - 1};
-      if (!isInsideMetricBounds(below)) {
-        return false;
-      }
-      const auto p = gridToWorld(below);
-      const octomap::OcTreeNode * node = octree_->search(p);
-      return node && octree_->isNodeOccupied(node);
+    const GridIndex direct_below{idx.x, idx.y, idx.z - 1};
+    if (!isInsideMetricBounds(direct_below)) {
+      return false;
     }
 
-    for (int dz = 1; dz <= std::max(1, support_depth_cells); ++dz) {
-      for (int dx = -support_xy_radius_cells; dx <= support_xy_radius_cells; ++dx) {
-        for (int dy = -support_xy_radius_cells; dy <= support_xy_radius_cells; ++dy) {
-          GridIndex below{idx.x + dx, idx.y + dy, idx.z - dz};
-          if (!isInsideMetricBounds(below)) {
+    // Require direct support directly below (or within support_depth_cells directly below)
+    bool center_supported = false;
+    int support_z = idx.z - 1;
+    const int max_dz = strict_direct_ground_support ? 1 : std::max(1, support_depth_cells);
+    for (int dz = 1; dz <= max_dz; ++dz) {
+      const GridIndex below{idx.x, idx.y, idx.z - dz};
+      if (isInsideMetricBounds(below) && isOccupiedCell(below)) {
+        center_supported = true;
+        support_z = idx.z - dz;
+        break;
+      }
+    }
+    if (!center_supported) {
+      return false;
+    }
+
+    // Require neighborhood surface continuity so narrow 1-cell railings, wall tops, or isolated
+    // obstacle ledges are not marked traversable. A valid floor/ramp/stair tread has at least
+    // 5 supporting neighbors in its 3x3 horizontal neighborhood whose top surface is within
+    // [support_z - 1, support_z + 1] (i.e. occupied at sz and free at sz + 1 and sz + 2).
+    // Thin railings/walls only have 2 neighbors along their line, while floors/stairs have 5..8.
+    int neighbor_support_count = 0;
+    const int xy_r = std::max(1, support_xy_radius_cells);
+    for (int dx = -xy_r; dx <= xy_r; ++dx) {
+      for (int dy = -xy_r; dy <= xy_r; ++dy) {
+        if (dx == 0 && dy == 0) {
+          continue;
+        }
+        bool col_supported = false;
+        for (int sz = support_z - 1; sz <= support_z + 1; ++sz) {
+          const GridIndex n_sup{idx.x + dx, idx.y + dy, sz};
+          if (!isInsideMetricBounds(n_sup) || !isOccupiedCell(n_sup)) {
             continue;
           }
-          const auto p = gridToWorld(below);
-          const octomap::OcTreeNode * node = octree_->search(p);
-          if (node && octree_->isNodeOccupied(node)) {
-            return true;
+          const GridIndex n_above1{idx.x + dx, idx.y + dy, sz + 1};
+          const GridIndex n_above2{idx.x + dx, idx.y + dy, sz + 2};
+          if ((isInsideMetricBounds(n_above1) && isOccupiedCell(n_above1)) ||
+              (isInsideMetricBounds(n_above2) && isOccupiedCell(n_above2)))
+          {
+            continue;
           }
+          col_supported = true;
+          break;
+        }
+        if (col_supported) {
+          ++neighbor_support_count;
         }
       }
     }
-    return false;
+    return neighbor_support_count >= 5;
   }
 
   bool isOccupiedCell(const GridIndex & idx) const
@@ -578,10 +612,16 @@ private:
           continue;
         }
         const GridIndex n_above1{n.x, n.y, n.z + 1};
-        if (!isInsideMetricBounds(n_above1)) {
+        if (!isInsideMetricBounds(n_above1) || !isOccupiedCell(n_above1)) {
           continue;
         }
-        if (isOccupiedCell(n_above1)) {
+        // Only treat neighbor as a blocking wall/obstacle above if it continues higher
+        // (i.e. not a single-voxel climbable stair step with free space above it).
+        const GridIndex n_above2{n.x, n.y, n.z + 2};
+        const GridIndex n_above3{n.x, n.y, n.z + 3};
+        if ((isInsideMetricBounds(n_above2) && isOccupiedCell(n_above2)) ||
+            (isInsideMetricBounds(n_above3) && isOccupiedCell(n_above3)))
+        {
           return true;
         }
       }
@@ -770,18 +810,20 @@ private:
     const double resolution = octree_->getResolution();
     marker.scale.x = resolution;
     marker.scale.y = resolution;
-    marker.scale.z = resolution;
+    marker.scale.z = (ns == "traversable_cells") ? std::min(0.05, resolution * 0.25) : resolution;
     marker.color.r = r_color;
     marker.color.g = g_color;
     marker.color.b = b_color;
     marker.color.a = a_color;
     marker.points.reserve(cells.size());
+    const float z_offset = (ns == "traversable_cells") ?
+      static_cast<float>(-0.35 * resolution) : 0.0F;
     for (const auto & c : cells) {
       const auto p = gridToWorld(c);
       geometry_msgs::msg::Point q;
       q.x = p.x();
       q.y = p.y();
-      q.z = p.z();
+      q.z = p.z() + z_offset;
       marker.points.push_back(q);
     }
     publisher->publish(marker);
@@ -873,9 +915,126 @@ private:
       }
     }
 
+    filterToMainTraversableComponent();
+
     publishCellSetMarker(
       traversable_cells_, traversable_marker_pub_, "traversable_cells", 0.20F, 0.95F, 0.55F,
-      0.55F);
+      1.0F);
+    publishTraversableLevelsMarker();
+  }
+
+  void filterToMainTraversableComponent()
+  {
+    if (traversable_cells_.empty()) {
+      return;
+    }
+
+    const auto dirs = make26Directions();
+    std::unordered_set<GridIndex, GridIndexHash> unvisited = traversable_cells_;
+    std::unordered_set<GridIndex, GridIndexHash> largest_component;
+    std::size_t removed_components = 0;
+
+    while (!unvisited.empty()) {
+      const GridIndex seed = *unvisited.begin();
+      unvisited.erase(seed);
+      std::unordered_set<GridIndex, GridIndexHash> comp;
+      std::vector<GridIndex> stack;
+      comp.insert(seed);
+      stack.push_back(seed);
+
+      while (!stack.empty()) {
+        const GridIndex cur = stack.back();
+        stack.pop_back();
+        for (const auto & d : dirs) {
+          const GridIndex nb{cur.x + d.x, cur.y + d.y, cur.z + d.z};
+          auto it = unvisited.find(nb);
+          if (it != unvisited.end()) {
+            unvisited.erase(it);
+            comp.insert(nb);
+            stack.push_back(nb);
+          }
+        }
+      }
+
+      if (comp.size() > largest_component.size()) {
+        if (!largest_component.empty()) {
+          ++removed_components;
+        }
+        largest_component = std::move(comp);
+      } else {
+        ++removed_components;
+      }
+    }
+
+    const std::size_t before_count = traversable_cells_.size();
+    traversable_cells_ = std::move(largest_component);
+    RCLCPP_INFO(
+      get_logger(),
+      "Traversable connected-component filter: kept=%zu/%zu cells (removed %zu isolated regions)",
+      traversable_cells_.size(), before_count, removed_components);
+  }
+
+  void publishTraversableLevelsMarker() const
+  {
+    if (!octree_ || !traversable_levels_pub_) {
+      return;
+    }
+    const char * level_names[5] = {
+      "1_floor_1_0m",
+      "2_floor_2_1p5m",
+      "3_floor_3_3p0m",
+      "4_floor_4_4p5m",
+      "5_roof_5p8m"
+    };
+    const float level_colors[5][3] = {
+      {0.18F, 0.88F, 0.45F},  // Floor 1 (0.0m): Emerald Green
+      {0.15F, 0.72F, 0.96F},  // Floor 2 (1.5m): Sky / Cyan Blue
+      {0.98F, 0.76F, 0.18F},  // Floor 3 (3.0m): Amber / Gold
+      {0.88F, 0.42F, 0.96F},  // Floor 4 (4.5m): Violet / Magenta
+      {0.96F, 0.36F, 0.36F}   // Roof (5.8m): Coral Red
+    };
+    const double resolution = octree_->getResolution();
+    const auto stamp = now();
+    const auto frame_id = get_parameter("frame_id").as_string();
+    visualization_msgs::msg::MarkerArray arr;
+    arr.markers.resize(5);
+    for (int i = 0; i < 5; ++i) {
+      auto & m = arr.markers[i];
+      m.header.stamp = stamp;
+      m.header.frame_id = frame_id;
+      m.ns = level_names[i];
+      m.id = i;
+      m.type = visualization_msgs::msg::Marker::CUBE_LIST;
+      m.action = visualization_msgs::msg::Marker::ADD;
+      m.pose.orientation.w = 1.0;
+      m.scale.x = resolution;
+      m.scale.y = resolution;
+      m.scale.z = std::min(0.05, resolution * 0.25);
+      m.color.r = level_colors[i][0];
+      m.color.g = level_colors[i][1];
+      m.color.b = level_colors[i][2];
+      m.color.a = 1.0F;
+    }
+    const float z_offset = static_cast<float>(-0.35 * resolution);
+    for (const auto & c : traversable_cells_) {
+      const auto p = gridToWorld(c);
+      geometry_msgs::msg::Point q;
+      q.x = p.x();
+      q.y = p.y();
+      q.z = p.z() + z_offset;
+      int lvl = 4;
+      if (q.z < 1.35) {
+        lvl = 0;
+      } else if (q.z < 2.85) {
+        lvl = 1;
+      } else if (q.z < 4.30) {
+        lvl = 2;
+      } else if (q.z < 5.75) {
+        lvl = 3;
+      }
+      arr.markers[lvl].points.push_back(q);
+    }
+    traversable_levels_pub_->publish(arr);
   }
 
   bool isCellTraversable(
@@ -933,6 +1092,17 @@ private:
           }
           const octomap::OcTreeNode * node = octree_->search(p);
           if (node && octree_->isNodeOccupied(node)) {
+            // Allow adjacent 1-voxel climbable stair steps at dz == 0 when the space above
+            // that step (nz + 1 and nz + 2) is clear for the robot to step up onto it.
+            if (dz == 0) {
+              const GridIndex step_above1{nearby_idx.x, nearby_idx.y, nearby_idx.z + 1};
+              const GridIndex step_above2{nearby_idx.x, nearby_idx.y, nearby_idx.z + 2};
+              if ((!isInsideMetricBounds(step_above1) || !isOccupiedCell(step_above1)) &&
+                  (!isInsideMetricBounds(step_above2) || !isOccupiedCell(step_above2)))
+              {
+                continue;
+              }
+            }
             return false;
           }
         }
@@ -946,10 +1116,16 @@ private:
     bool strict_direct_ground_support, int support_xy_radius_cells, int support_depth_cells,
     GridIndex & out) const
   {
-    if (isCellTraversable(
-        seed, robot_radius, require_ground_support, strict_direct_ground_support,
-        support_xy_radius_cells, support_depth_cells))
-    {
+    auto is_valid_cell = [&](const GridIndex & c) {
+      if (!traversable_cells_.empty()) {
+        return traversable_cells_.find(c) != traversable_cells_.end();
+      }
+      return isCellTraversable(
+        c, robot_radius, require_ground_support, strict_direct_ground_support,
+        support_xy_radius_cells, support_depth_cells);
+    };
+
+    if (is_valid_cell(seed)) {
       out = seed;
       return true;
     }
@@ -963,20 +1139,14 @@ private:
             }
 
             GridIndex c1{seed.x + dx, seed.y + dy, seed.z + dz};
-            if (isCellTraversable(
-                c1, robot_radius, require_ground_support, strict_direct_ground_support,
-                support_xy_radius_cells, support_depth_cells))
-            {
+            if (is_valid_cell(c1)) {
               out = c1;
               return true;
             }
 
             if (dz > 0) {
               GridIndex c2{seed.x + dx, seed.y + dy, seed.z - dz};
-              if (isCellTraversable(
-                  c2, robot_radius, require_ground_support, strict_direct_ground_support,
-                  support_xy_radius_cells, support_depth_cells))
-              {
+              if (is_valid_cell(c2)) {
                 out = c2;
                 return true;
               }
@@ -1102,10 +1272,12 @@ private:
         if (closed_set.find(nbr) != closed_set.end()) {
           continue;
         }
-        if (!isCellTraversable(
+        const bool nbr_ok = !traversable_cells_.empty() ?
+          (traversable_cells_.find(nbr) != traversable_cells_.end()) :
+          isCellTraversable(
             nbr, robot_radius, require_ground_support, strict_direct_ground_support,
-            support_xy_radius_cells, support_depth_cells))
-        {
+            support_xy_radius_cells, support_depth_cells);
+        if (!nbr_ok) {
           continue;
         }
         const double step_cost = euclidean(current.idx, nbr);
@@ -1202,6 +1374,7 @@ private:
   rclcpp::Publisher<octomap_msgs::msg::Octomap>::SharedPtr octomap_pub_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr preblocked_marker_pub_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr traversable_marker_pub_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr traversable_levels_pub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr risk_cost_pub_;
   rclcpp::Service<jie_map_msgs::srv::GetNavigationMapMeta>::SharedPtr get_meta_srv_;
   rclcpp::Service<jie_map_msgs::srv::ExportNavigationSnapshot>::SharedPtr
